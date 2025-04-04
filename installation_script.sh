@@ -8,4 +8,4 @@ cd $PWD/Python_TPM20_GUI/
 sudo chmod a+rwx create_binary_package.sh 
 ./create_binary_package.sh
 cd bin/
-#sudo reboot
+sudo reboot
