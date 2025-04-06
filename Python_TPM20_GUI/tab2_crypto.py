@@ -274,7 +274,12 @@ class Tab_RSA(wx.Panel):
             "-o", "data_encrypted.txt",
             "datain.txt"
         ])
-        self.command_display.AppendText(str(output_message) + "\n")
+        self.command_display.AppendText(str(output_message))
+        enc_message = exec_cmd.execTpmToolsAndCheck([
+            "xxd", "data_encrypted.txt",
+        ]) 
+        self.command_display.AppendText("Encryted message is:\n" + str(enc_message) + "\n")
+        self.Update()
         self.command_display.AppendText("tpm2_rsaencrypt -c 0x81000005 -o data_encrypted.txt datain.txt\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
@@ -291,7 +296,7 @@ class Tab_RSA(wx.Panel):
         data_out = data_file.read()
         data_file.close()
         self.command_display.AppendText(str(output_message))
-        self.command_display.AppendText("Your message is:\n" + str(data_out) + "\n")
+        self.command_display.AppendText("Decrypted message is:\n" + str(data_out) + "\n")
         self.Update()
         self.command_display.AppendText("tpm2_rsadecrypt -c 0x81000005 -p RSAleaf123 -o dataout.txt data_encrypted.txt\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
@@ -413,6 +418,8 @@ class Tab_RSA(wx.Panel):
             "-u", "RSAPub.key",
             "-c", "RSAverifyleaf.ctx"
         ])
+        self.command_display.AppendText(str(output_message) + "\n")
+        self.Update()
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_verifysignature",
             "-c", "RSAverifyleaf.ctx",
@@ -421,9 +428,9 @@ class Tab_RSA(wx.Panel):
             "-s", "signature_blob",
             "-t", "ticket.bin"
         ])
+        self.command_display.AppendText(str(output_message) + "\nVerification completed\n")
         self.command_display.AppendText("tpm2_loadexternal -C o -u RSAPub.key -c RSAverifyleaf.ctx\n")
         self.command_display.AppendText("tpm2_verifysignature -c RSAverifyleaf.ctx -g sha256 -m datain.txt -s signature_blob -t ticket.bin\n")
-        self.command_display.AppendText(str(output_message) + "\nVerification Successful Unless Error Message Is Shown\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnClear(self, evt):
@@ -688,6 +695,8 @@ class Tab_ECC(wx.Panel):
             "-u", "ECCpub.key",
             "-c", "ECCverifyleaf.ctx"
         ])
+        self.command_display.AppendText(str(output_message) + "\n")
+        self.Update()
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_verifysignature",
             "-c", "ECCverifyleaf.ctx",
@@ -695,9 +704,9 @@ class Tab_ECC(wx.Panel):
             "-m", "secret.data",
             "-s", "signature_blob"
         ])
+        self.command_display.AppendText(str(output_message) + "\nVerification completed\n")
         self.command_display.AppendText("tpm2_loadexternal -C o -u ECCpub.key -c ECCverifyleaf.ctx\n")
         self.command_display.AppendText("tpm2_verifysignature -c ECCverifyleaf.ctx -g sha256 -m secret.data -s signature_blob\n")
-        self.command_display.AppendText(str(output_message) + "\nVerification Successful Unless Error Message Is Shown\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnClear(self, evt):
