@@ -338,6 +338,10 @@ class Tab_RSA(wx.Panel):
             "datain.txt",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
+        signature_bin = exec_cmd.execTpmToolsAndCheck([
+            "xxd", "signature_blob",
+        ]) 
+        self.command_display.AppendText("Signature blob is:\n" + str(signature_bin) + "\n")
         self.Update()
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_sign",
@@ -349,6 +353,10 @@ class Tab_RSA(wx.Panel):
             "datain.txt",
         ])
         self.command_display.AppendText(str(output_message))
+        signature_bin = exec_cmd.execTpmToolsAndCheck([
+            "xxd", "signature_data",
+        ]) 
+        self.command_display.AppendText("Signature data is:\n" + str(signature_bin) + "\n")
         self.Update()        
         
         self.command_display.AppendText("tpm2_hash -C o -g 0x00B -o hash.bin -t ticket.bin datain.txt\n")
