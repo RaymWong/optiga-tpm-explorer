@@ -246,7 +246,7 @@ class Tab_PCR(wx.Panel):
         self.sha_checkbox.SetValue(True)
         text_for_pcrbank = wx.StaticText(self, -1, "Choose your PCR Index: ")
         self.pcr_bank_choice = wx.ComboBox(self, -1, "Pick the PCR Index", choices=pcr_index_list, style=wx.CB_READONLY)
-        text_for_userinput = wx.StaticText(self, -1, "Input for ABC operations: ")
+        text_for_userinput = wx.StaticText(self, -1, "Input for PCR operations: ")
         self.user_input = wx.TextCtrl(self, -1)
         button_pcrlistall = wx.Button(self, -1, 'PCR List All')
         button_pcrlist = wx.Button(self, -1, 'PCR List')
@@ -277,7 +277,7 @@ class Tab_PCR(wx.Panel):
         top_row_sizer.Add(self.pcr_bank_choice, 1, wx.ALL, 5)
         middle_row_sizer.AddSpacer(5)
         middle_row_sizer.Add(text_for_userinput, 2, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-        middle_row_sizer.Add(self.user_input, 7, wx.ALL, 5)
+        middle_row_sizer.Add(self.user_input, 7, wx.EXPAND, 5)
         bottom_row_sizer.Add(button_pcrlistall, 1, wx.EXPAND | wx.ALL, 5)
         bottom_row_sizer.Add(button_pcrlist, 1, wx.EXPAND | wx.ALL, 5)
         bottom_row_sizer.Add(button_pcrextend, 1, wx.EXPAND | wx.ALL, 5)
@@ -430,7 +430,7 @@ class Tab_NVM(wx.Panel):
         text_for_nvm_data = wx.StaticText(self, -1, "NVM data: ")
         self.nvm_data = wx.TextCtrl(self, -1)
         text_for_owner_auth = wx.StaticText(self, -1, "Owner Authorisation: ")
-        self.owner_input = wx.TextCtrl(self, -1, size=(201, 33))
+        self.owner_input = wx.TextCtrl(self, -1)
         text_for_nv_auth = wx.StaticText(self, -1, "NV Authorisation: ")
         self.nv_auth_input = wx.TextCtrl(self, -1)
         button_nvdefine = wx.Button(self, -1, 'NV Define', size=(201, 33))
@@ -472,6 +472,8 @@ class Tab_NVM(wx.Panel):
         fgs2.AddGrowableCol(0, 1)
         fgs2.AddGrowableCol(1, 4)
         fgs3 = wx.FlexGridSizer(rows=2, cols=2, vgap=9, hgap=0)
+        fgs3.AddGrowableCol(0)
+        fgs3.AddGrowableCol(1)
         gs1 = wx.GridSizer(rows=3, cols=2, vgap=9, hgap=10)
         hori_sizer = wx.BoxSizer(wx.HORIZONTAL)
         gs2 = wx.GridSizer(rows=2, cols=2, vgap=9, hgap=10)
@@ -507,18 +509,18 @@ class Tab_NVM(wx.Panel):
         
         # attach the objects to the middle sizer
         fgs1.Add(text_for_nvm_index, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 0)
-        fgs1.Add(self.nvm_index, 0, wx.EXPAND, 0)
+        fgs1.Add(self.nvm_index, 1, wx.EXPAND, 0)
         fgs1.Add(text_for_nvm_size, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 0)
-        fgs1.Add(self.nvm_size, 0, wx.EXPAND, 0)
+        fgs1.Add(self.nvm_size, 1, wx.EXPAND, 0) 
         fgs2.Add(text_for_nvm_offset, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 0)
         fgs2.Add(self.nvm_offset, 0, wx.EXPAND, 0)
         fgs2.Add(text_for_nvm_data, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 0)
         fgs2.Add(self.nvm_data, 0, wx.EXPAND, 0)
         fgs2.Add(text_for_read_amt, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 0)
         fgs2.Add(self.read_amt, 0, wx.EXPAND, 0)
-        fgs3.Add(text_for_owner_auth, 0, wx.ALIGN_CENTER_VERTICAL, 0)
+        fgs3.Add(text_for_owner_auth, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 0)
         fgs3.Add(self.owner_input, 0, wx.EXPAND, 0)
-        fgs3.Add(text_for_nv_auth, 0, wx.ALIGN_CENTER_VERTICAL, 0)
+        fgs3.Add(text_for_nv_auth, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 0)
         fgs3.Add(self.nv_auth_input, 0, wx.EXPAND, 0)
         gs1.Add(button_nvdefine, 0, wx.EXPAND, 0)
         gs1.Add(button_nvwrite, 0, wx.EXPAND, 0)
@@ -1010,7 +1012,8 @@ class Tab_Handles(wx.Panel):
         mainsizer.Add(self.txt_display, 1, wx.EXPAND | wx.TOP, 5)
 
         # Add elements to the element sizer
-        handle_blurb_sizer.Add(input_handle_blurb, 0, wx.CENTRE | wx.LEFT, 10)
+        handle_blurb_sizer.Add(input_handle_blurb, 1, wx.EXPAND | wx.CENTER | wx.LEFT, 10)
+
         
         element_sizer.Add(button_listpersistent, 1, wx.EXPAND | wx.ALL, 5)
         element_sizer.Add(button_readpersistent, 1, wx.EXPAND | wx.ALL, 5)
@@ -1021,8 +1024,8 @@ class Tab_Handles(wx.Panel):
         element_sizer.Add(backbutton, 0, wx.EXPAND | wx.ALL, 5)
 
         # Attach UI elements to the internal sizers
-        handle_sizer.Add(handle_blurb_sizer, 0, wx.EXPAND | wx.ALL, 0)
-        handle_sizer.Add(self.input_handle, 1, wx.EXPAND | wx.ALL, 5)
+        handle_sizer.Add(handle_blurb_sizer, 1,  wx.ALIGN_CENTER_VERTICAL| wx.LEFT, 5)
+        handle_sizer.Add(self.input_handle, 10, wx.EXPAND | wx.RIGHT, 5)
         handle_sizer.AddSpacer(5)
 
         # Set tooltips

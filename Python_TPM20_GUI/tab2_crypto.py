@@ -403,6 +403,9 @@ class Tab_RSA(wx.Panel):
             "datain.txt"
         ])
         self.command_display.AppendText(str(output_message) + "\n")
+        self.command_display.AppendText("tpm2_readpublic -c 0x81000005 -f pem -o RSAkey.pem\n")
+        self.command_display.AppendText("openssl dgst -verify RSAkey.pem -keyform pem -sha256 -signature signature_data datain.txt\n")
+        self.command_display.AppendText("openssl dgst -verify RSAkey.pem -keyform pem -sha256 -signature signature_data datain.txt\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnVerifyTPM1(self, evt):
@@ -633,8 +636,13 @@ class Tab_ECC(wx.Panel):
             "-f", "plain",
             "secret.data",
         ])
-        self.command_display.AppendText(str(output_message))
+        self.command_display.AppendText(str(output_message) + "\n")
+        signature_bin = exec_cmd.execTpmToolsAndCheck([
+            "xxd", "signature_data",
+        ])
+        self.command_display.AppendText("Signature data is:\n" + str(signature_bin) + "\n")
         self.Update()
+        
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_sign",
             "-c", "0x81000007",
@@ -644,7 +652,12 @@ class Tab_ECC(wx.Panel):
             "secret.data",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
+        signature_bin = exec_cmd.execTpmToolsAndCheck([
+            "xxd", "signature_blob",
+        ])
+        self.command_display.AppendText("Signature blob is:\n" + str(signature_bin) + "\n")
         self.Update()
+        
         self.command_display.AppendText("tpm2_sign -c 0x81000007 -p ECCleaf123 -g sha256 -o signature_data -f plain secret.data\n")
         self.command_display.AppendText("tpm2_sign -c 0x81000007 -p ECCleaf123 -g sha256 -o signature_blob secret.data\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
