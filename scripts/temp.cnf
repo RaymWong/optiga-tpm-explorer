@@ -10,4 +10,4 @@ activate = 1
 
 [tpm2_sect]
 activate = 1
-SET_OWNERAUTH = owner123
+
