@@ -1,25 +1,22 @@
 #!/bin/sh
 set -e
 
-#~ #when auth value is empty
-#~ openssl genpkey -config temp.cnf -pkeyopt parent-auth: -provider tpm2 -algorithm RSA -out tpm_tss_key.pem
-
-#~ #when auth value is set
-#~ openssl genpkey -config temp.cnf -pkeyopt parent-auth:owner123 -provider tpm2 -algorithm RSA -out rsa_CA.tss
-#~ openssl req -config temp.cnf -provider tpm2  -in rsa_CA.tss -pkeyopt parent-auth:owner123 -new -x509 -days 7300 -sha256   -out CA_rsa_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=DSS/CN=TPMEvalKitCA'
 
 #Generate CA RSA key and Certificate
 openssl genpkey -algorithm RSA -out rsa_CA.pem
 openssl req -key rsa_CA.pem -new -x509 -days 7300 -sha256   -out CA_rsa_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=DSS/CN=TPMEvalKitCA'
 
-#Generate Server key with TPM
-openssl genpkey -config temp.cnf -pkeyopt parent-auth:owner123 -provider tpm2 -algorithm RSA -out rsa_server.tss
-openssl req -new -config temp.cnf -provider tpm2 -in rsa_server.tss -pkeyopt parent-auth:owner123 -subj /CN=TPM_UI/O=Infineon/C=SG -out server_rsa.csr
+#Create primary key
+set +e
+tpm2_evictcontrol -C o -c 0x8100000A -P owner123
+set -e
+tpm2_createprimary -C o -P owner123 -g sha256 -G ecc -c ECCprimary.ctx
+tpm2_evictcontrol -C o -c ECCprimary.ctx -P owner123 0x8100000A
 
-# OPENSSL_CONF=temp.cnf openssl x509 -req -provider tpm2 -provider base -in server_rsa.csr -CA CA_rsa_cert.pem -CAkey rsa_CA.tss -out CAsigned_rsa_cert.crt -days 365 -sha256 -CAcreateserial 
+#Generate Server key with TPM
+openssl req -new -provider tpm2  -pkeyopt parent:0x8100000A -subj /CN=TPM_UI/O=Infineon/C=SG -out server_rsa.csr -keyout rsa_server_tss.pem
 
 #Generate Server certificate
-OPENSSL_CONF=temp.cnf openssl x509 -req -in server_rsa.csr -CA CA_rsa_cert.pem -CAkey rsa_CA.pem -out CAsigned_rsa_cert.crt -days 365 -sha256 -CAcreateserial 
+openssl x509 -req -in server_rsa.csr -CA CA_rsa_cert.pem -CAkey rsa_CA.pem -out CAsigned_rsa_cert.crt -days 365 -sha256 -CAcreateserial 
 
-
-OPENSSL_CONF=temp.cnf openssl s_server -provider tpm2 -provider default  -cert CAsigned_rsa_cert.crt -accept 4433  -key rsa_server.tss
+openssl s_server -provider tpm2 -provider default -cert CAsigned_rsa_cert.crt -accept 4433  -key rsa_server_tss.pem 
