@@ -4,7 +4,7 @@ set -e
 
 #Generate CA RSA key and Certificate
 openssl genpkey -algorithm RSA -out rsa_CA.pem
-openssl req -key rsa_CA.pem -new -x509 -days 7300 -sha256   -out CA_rsa_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=DSS/CN=TPMEvalKitCA'
+openssl req -key rsa_CA.pem -new -x509 -days 7300 -sha256   -out CA_rsa_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=CSS/CN=TPMEvalKitCA'
 
 #Create primary key
 set +e
