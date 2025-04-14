@@ -20,3 +20,6 @@ openssl req -new -config temp.cnf -provider tpm2 -in rsa_server.tss -pkeyopt par
 
 #Generate Server certificate
 OPENSSL_CONF=temp.cnf openssl x509 -req -in server_rsa.csr -CA CA_rsa_cert.pem -CAkey rsa_CA.pem -out CAsigned_rsa_cert.crt -days 365 -sha256 -CAcreateserial 
+
+
+OPENSSL_CONF=temp.cnf openssl s_server -provider tpm2 -provider default  -cert CAsigned_rsa_cert.crt -accept 4433  -key rsa_server.tss
