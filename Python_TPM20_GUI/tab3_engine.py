@@ -53,7 +53,7 @@ def ServerProcess(server_log):
             server_proc = None
     #server_proc = exec_cmd.createProcess("openssl s_server -cert CAsigned_rsa_cert.crt -accept 4433 -keyform engine -engine tpm2tss -key rsa_server.tss", server_log)
     server_proc = exec_cmd.createProcess("lxterminal --command='openssl s_server -cert CAsigned_rsa_cert.crt -accept 4433 -keyform engine -engine tpm2tss -key rsa_server.tss'", server_log)
-
+    #server_proc = exec_cmd.createProcess("lxterminal --command='openssl s_server -cert CAsigned_rsa_cert.crt -accept 4433 -keyform -providers -provider tpm2 -key rsa_server.tss'", server_log)
 
 def ClientProcess(client_log):
     global client_proc
@@ -1040,56 +1040,78 @@ class Tab_RSA_MISC(wx.Panel):
         wx.CallLater(10, self.OnGenKey)
     
     def OnGenKey(self):
-        exec_cmd.execCLI(["rm", "rsa2.tss", ])
-        exec_cmd.execCLI(["rm", "mycipher", ])
-        exec_cmd.execCLI(["rm", "mysig", ])
+        #self.command_out.AppendText(f"Current directory: {os.getcwd()}\n")
+        exec_cmd.execCLI(["rm", "rsa2.pem"])
+        exec_cmd.execCLI(["rm", "mycipher"])
+        exec_cmd.execCLI(["rm", "mysig"])
 
-        if (exec_cmd.ownerAuth !=""):
+        if (exec_cmd.ownerAuth != ""):
+            # Step 1: Evict control of the handle 0x81000008
             command_output = exec_cmd.execCLI([
-                "tpm2tss-genkey",
-                "-o",exec_cmd.ownerAuth,
-                "-a", "rsa",
-                "rsa2.tss",
+                "tpm2_evictcontrol", "-C", "o", "-P", "owner123", "-c", "0x81000008"
+            ])
+            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P owner123 -c 0x81000008' executed \n")
+
+            # Step 2: Create a primary key with ECC
+            command_output = exec_cmd.execCLI([
+                "tpm2_createprimary", "-C", "o", "-P", "owner123", "-g", "sha256", "-G", "ecc", "-c", "primary_sh.ctx"
+            ])
+            self.command_out.AppendText(f"'tpm2_createprimary -C o -P owner123 -g sha256 -G ecc -c primary_sh.ctx' executed \n")
+
+            # Step 3: Evict control of the primary key
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", "owner123", "-c", "primary_sh.ctx", "0x81000008"
+            ])
+            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P owner123 -c primary_sh.ctx 0x81000008' executed \n")
+
+            # Step 4: Generate RSA key using TPM and parent key
+            command_output = exec_cmd.execCLI([
+                "openssl", "genpkey", "-algorithm", "RSA", "-provider", "tpm2", "-pkeyopt", "bits:2048", "-pkeyopt", "parent:0x81000008", "-out", "rsa2.pem"
             ])
             self.command_out.AppendText(str(command_output))
-            self.command_out.AppendText("'tpm2tss-genkey -a rsa rsa2.tss' executed \n")
+            self.command_out.AppendText(f"'openssl genpkey -algorithm RSA -provider tpm2 -pkeyopt bits:2048 -pkeyopt parent:0x81000008 -out rsa2.pem' executed \n")
+
+            # Step 5: Extract public key from the generated RSA key
             command_output = exec_cmd.execCLI([
-                "openssl", "rsa",
-                "-engine", "tpm2tss",
-                "-inform", "engine",
-                "-in", "rsa2.tss",
-                "-pubout",
-                "-outform", "pem",
-                "-out", "rsa2.pub",
+                "openssl", "pkey", "-provider", "tpm2", "-provider", "default", "-in", "rsa2.pem", "-pubout", "-out", "rsa2.pub.pem"
             ])
-            self.command_out.AppendText("'openssl rsa -engine tpm2tss -inform engine -in rsa2.tss -pubout -outform pem -out rsa2.pub' executed \n")
-            self.command_out.AppendText("rsa.tss contains: \n")
-            filehandle = open("rsa2.tss", 'r')
-            self.command_out.AppendText(filehandle.read() + "\n")
-            filehandle.close()
+            self.command_out.AppendText(str(command_output))
+            self.command_out.AppendText(f"'openssl pkey -provider tpm2 -provider default -in rsa2.pem -pubout -out rsa2.pub.pem' executed \n")
+
+            # Step 6: Read and display the content of rsa2.pub.pem
+            command_output = exec_cmd.execCLI([
+                "openssl", "rsa", "-pubin", "-text", "-in", "rsa2.pub.pem"
+            ])
+            self.command_out.AppendText("rsa2.pub.pem contains: \n")
+            with open("rsa2.pub.pem", 'r') as filehandle:
+                self.command_out.AppendText(filehandle.read() + "\n")
             self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+
+            
         else:
             command_output = exec_cmd.execCLI([
-                "tpm2tss-genkey",
-                "-a", "rsa",
-                "rsa2.tss",
+                "openssl", "genpkey",
+                "-pkeyopt", "parent-auth:",
+                "-provider", "tpm2",
+                "-algorithm", "RSA",
+                "-out", "rsa2.pem"
             ])
             self.command_out.AppendText(str(command_output))
-            self.command_out.AppendText("'tpm2tss-genkey -a rsa rsa2.tss' executed \n")
+            self.command_out.AppendText(f"'openssl genpkey -algorithm RSA -provider tpm2 -pkeyopt parent-auth:{exec_cmd.ownerAuth} -out rsa2.pem' executed \n")
             command_output = exec_cmd.execCLI([
-                "openssl", "rsa",
-                "-engine", "tpm2tss",
-                "-inform", "engine",
-                "-in", "rsa2.tss",
+                "openssl", "pkey",
+                "-provider", "tpm2",
+                "-provider", "default",
+                "-in", "rsa2.pem",
                 "-pubout",
-                "-outform", "pem",
-                "-out", "rsa2.pub",
+                "-out", "rsa2.pub.pem",
             ])
-            self.command_out.AppendText("'openssl rsa -engine tpm2tss -inform engine -in rsa2.tss -pubout -outform pem -out rsa2.pub' executed \n")
-            self.command_out.AppendText("rsa.tss contains: \n")
-            filehandle = open("rsa2.tss", 'r')
-            self.command_out.AppendText(filehandle.read() + "\n")
-            filehandle.close()
+            self.command_out.AppendText("'openssl pkey -provider tpm2 -provider default -in rsa2.pem -pubout -out rsa2.pub.pem' executed \n")
+            
+            #read the rsa2.pub.pem
+            self.command_out.AppendText("rsa2.pem contains: \n")
+            with open("rsa2.pem", 'r') as filehandle:
+                self.command_out.AppendText(filehandle.read() + "\n")
             self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
     
     def OnEnc1(self, evt):
@@ -1102,18 +1124,19 @@ class Tab_RSA_MISC(wx.Panel):
         else:
             self.command_out.AppendText("Input data cannot be blank")
             return
-        data_file = open("engine_data.txt", "w")
+        data_file = open("input_data.txt", "w")
         data_file.write(input_data)
         data_file.close()
         exec_cmd.execCLI([
             "openssl", "pkeyutl",
             "-pubin",
-            "-inkey", "rsa2.pub",
-            "-in", "engine_data.txt",
+            "-inkey", "rsa2.pub.pem",
+            "-in", "input_data.txt",
             "-encrypt",
             "-out", "mycipher",
         ])
-        self.command_out.AppendText("'openssl pkeyutl -pubin -inkey rsa2.pub -in engine_data.txt -encrypt -out mycipher' executed \n")
+        
+        self.command_out.AppendText("'openssl pkeyutl -pubin -inkey rsa2.pub.pem -in input_data.txt -encrypt -out mycipher' executed \n")
         self.command_out.AppendText("mycipher contains: \n")
         command_output = exec_cmd.execCLI(["xxd", "mycipher", ])
         self.command_out.AppendText(command_output + "\n")
@@ -1124,31 +1147,42 @@ class Tab_RSA_MISC(wx.Panel):
         wx.CallLater(10, self.OnDec)
 
     def OnDec(self):
-        if (exec_cmd.ownerAuth !=""):
-        
-            f = open("temp.conf", "w+")
-            f.write(exec_cmd.openssl_cnf)
-            f.close()
+        if (exec_cmd.ownerAuth != ""):
+            with open("temp.conf", "w") as f:
+                f.write(exec_cmd.openssl_cnf)
 
-            cmd ="OPENSSL_CONF=temp.conf openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -decrypt -in mycipher"
-            ps_command = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-            command_output = ps_command.stdout.read()
-            retcode = ps_command.wait()        
+            command_output = exec_cmd.execCLI([
+                "openssl", "pkeyutl",
+                "-provider", "tpm2",
+                "-provider", "default",
+                "-inkey", "rsa2.pem",
+                "-decrypt",
+                "-in", "mycipher",
+                "-out", "mydecipher",
+            ])
 
+            try:
+                with open("mydecipher", "rb") as f:
+                    plaintext = f.read().decode('utf-8', errors='replace')
+            except Exception as e:
+                plaintext = f"[Error reading mydecipher: {e}]"
 
-            self.command_out.AppendText(str(command_output.decode()))
-            self.command_out.AppendText("\n' OPENSSL_CONF=temp.conf openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -decrypt -in mycipher' executed \n")
+            self.command_out.AppendText(command_output + "\n")
+            self.command_out.AppendText("Decrypted message:\n")
+            self.command_out.AppendText(plaintext + "\n")
+            self.command_out.AppendText("\n'OPENSSL_CONF=temp.conf openssl pkeyutl -provider tpm2 -provider default -inkey rsa2.pem -decrypt -in mycipher -out mydecipher' executed \n")
             self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+   
         else:
 
-            cmd ="openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -decrypt -in mycipher"
+            cmd ="openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -decrypt -in mycipher -out mydecipher"
             ps_command = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
             command_output = ps_command.stdout.read()
             retcode = ps_command.wait()        
 
 
             self.command_out.AppendText(str(command_output.decode()))
-            self.command_out.AppendText("\n'openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -decrypt -in mycipher' executed \n")
+            self.command_out.AppendText("\n'openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -decrypt -in mycipher ' executed \n")
             self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnSign1(self, evt):
@@ -1161,34 +1195,31 @@ class Tab_RSA_MISC(wx.Panel):
         else:
             self.command_out.AppendText("Input data cannot be blank\n")
             return
-        data_file = open("engine_data.txt", "w")
+        data_file = open("input_data.txt", "w")
         data_file.write(input_data)
         data_file.close()
+        
         if (exec_cmd.ownerAuth !=""):
-            #~ exec_cmd.execCLI([
-                #~ "openssl", "pkeyutl",
-                #~ "-engine", "tpm2tss",
-                #~ "-keyform", "engine",
-                #~ "-inkey", "rsa2.tss",
-                #~ "-in", "engine_data.txt",
-                #~ "-sign",
-                #~ "-out", "mysig",
-            #~ ])
 
-            f = open("temp.conf", "w+")
-            f.write(exec_cmd.openssl_cnf)
-            f.close()
-
-            cmd ="OPENSSL_CONF=temp.conf openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -sign -in engine_data.txt -out mysig"
+            hash_cmd = "openssl dgst -sha256 -binary input_data.txt > input_data.hash"
+            self.command_out.AppendText(f"'{hash_cmd}' executed\n")
+            ps1 = subprocess.Popen(hash_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            hash_output = ps1.stdout.read().decode(errors="ignore")
+            retcode1 = ps1.wait()
+            if retcode1 != 0:
+                self.command_out.AppendText("Failed to generate hash:\n" + hash_output + "\n")
+                return
+                
+            cmd ="openssl pkeyutl -provider tpm2 -provider default -pkeyopt rsa_padding_mode:pss -inkey rsa2.pem -sign -rawin -in input_data.hash -out mysig"
         else:
-            cmd ="openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -sign -in engine_data.txt -out mysig"
+            cmd ="openssl pkeyutl -engine tpm2tss -keyform engine -inkey rsa2.tss -sign -in input_data.txt -out mysig"
         ps_command = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         command_output = ps_command.stdout.read()
-        retcode = ps_command.wait()        
+        retcode = ps_command.wait()    
 
         self.command_out.AppendText(cmd +" executed \n")
         self.command_out.AppendText("mysig contains: \n")
-        command_output = exec_cmd.execCLI(["xxd", "mysig", ])
+        command_output = exec_cmd.execCLI(["xxd", "mysig"])
         self.command_out.AppendText(command_output + "\n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
             
@@ -1197,19 +1228,28 @@ class Tab_RSA_MISC(wx.Panel):
         if(input_data==""):
             self.command_out.AppendText("Input data cannot be blank\n")
             return
-        data_file = open("engine_data.txt", "w")
+        data_file = open("input_data.txt", "w")
         data_file.write(input_data)
         data_file.close()
+        
+        hash_cmd = "openssl dgst -sha256 -binary input_data.txt > input_data.hash"
+        ps1 = subprocess.Popen(hash_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        hash_output = ps1.stdout.read().decode(errors="ignore")
+        retcode1 = ps1.wait()
+                
         command_output = exec_cmd.execCLI([
             "openssl", "pkeyutl",
-            "-pubin",
-            "-inkey", "rsa2.pub",
-            "-verify",
-            "-in", "engine_data.txt",
+            "-pkeyopt", "pad-mode:pss",
+            "-digest", "sha256",
+            "-pubin", "-inkey", "rsa2.pub.pem", 
+            "-verify", "-rawin",
+            "-in", "input_data.hash",
             "-sigfile", "mysig",
         ])
+        
         self.command_out.AppendText(str(command_output))
-        self.command_out.AppendText("'openssl pkeyutl -pubin -inkey rsa2.pub -verify -in engine_data.txt -sigfile mysig' executed \n")
+        self.command_out.AppendText(f"'{hash_cmd}' executed \n")
+        self.command_out.AppendText("'openssl pkeyutl -pubin -inkey rsa2.pub -verify -in input_data.hash -sigfile mysig' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnClear(self, evt):

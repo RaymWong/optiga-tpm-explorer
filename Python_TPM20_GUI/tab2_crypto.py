@@ -404,7 +404,7 @@ class Tab_RSA(wx.Panel):
         ])
         self.command_display.AppendText(str(output_message) + "\n")
         self.command_display.AppendText("tpm2_readpublic -c 0x81000005 -f pem -o RSAkey.pem\n")
-        self.command_display.AppendText("openssl dgst -verify RSAkey.pem -keyform pem -sha256 -signature signature_data datain.txt\n")
+        self.command_display.AppendText("openssl rsa -in RSAkey.pem -pubin -noout -text\n")
         self.command_display.AppendText("openssl dgst -verify RSAkey.pem -keyform pem -sha256 -signature signature_data datain.txt\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
