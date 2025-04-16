@@ -1290,10 +1290,10 @@ class Tab_RNG(wx.Panel):
         # attach the ui elements to the main sizer
         mainsizer.Add(button_sizer, 0, wx.EXPAND | wx.LEFT, 5)
         mainsizer.Add(self.command_out, 1, wx.EXPAND, 0)
-        button_sizer.Add(rng_input_blurb, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        button_sizer.Add(self.rng_input, 1, wx.ALIGN_CENTRE | wx.RIGHT, 10)
-        button_sizer.Add(rng_type_blurb, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        button_sizer.Add(self.rng_type, 1, wx.ALIGN_CENTRE | wx.LEFT, 5)
+        button_sizer.Add(rng_input_blurb, 4, wx.ALIGN_CENTRE | wx.LEFT, 10)
+        button_sizer.Add(self.rng_input, 1, wx.ALIGN_CENTRE | wx.RIGHT, 30)
+        button_sizer.Add(rng_type_blurb, 5, wx.ALIGN_CENTRE | wx.LEFT, 30)
+        button_sizer.Add(self.rng_type, 1, wx.ALIGN_CENTRE | wx.RIGHT, 5)
         button_sizer.Add(button_gen_rng, 0, wx.ALIGN_CENTRE | wx.LEFT, 10)
         button_sizer.Add(clearbutton, 0, wx.ALIGN_CENTRE | wx.LEFT, 10)
         button_sizer.Add(backbutton, 0, wx.ALIGN_CENTRE | wx.ALL, 10)
@@ -1334,27 +1334,29 @@ class Tab_RNG(wx.Panel):
         if (rng_output_type == 0):
             command_output = exec_cmd.execCLI([
                 "openssl", "rand",
-                "-engine", "tpm2tss",
+                "-provider", "tpm2",
+                "-provider", "default"
                 "-hex", str(no_bytes),
             ])
             split_output = command_output.split("\n")
             for value in split_output:
                 if "warning" not in value.lower():
                     self.command_out.AppendText(value + "\n")
-            self.command_out.AppendText("'openssl rand -engine tpm2tss -hex " + str(no_bytes) + "' executed \n")
+            self.command_out.AppendText("'openssl rand -provider tpm2 -provider default -hex " + str(no_bytes) + "' executed \n")
             self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
         # if output type is base64
         elif (rng_output_type == 1):
             command_output = exec_cmd.execCLI([
                 "openssl", "rand",
-                "-engine", "tpm2tss",
+                "-provider", "tpm2",
+                "-provider", "default"
                 "-base64", str(no_bytes),
             ])
             split_output = command_output.split("\n")
             for value in split_output:
                 if "warning" not in value.lower():
                     self.command_out.AppendText(value + "\n")
-            self.command_out.AppendText("'openssl rand -engine tpm2tss -base64 " + str(no_bytes) + "' executed \n")
+            self.command_out.AppendText("'openssl rand -provider tpm2 -provider default -base64 " + str(no_bytes) + "' executed \n")
             self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
         else:
             self.command_out.AppendText("You need to select the rng output type.\n")
