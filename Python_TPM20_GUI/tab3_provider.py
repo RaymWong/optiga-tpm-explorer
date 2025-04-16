@@ -1335,7 +1335,7 @@ class Tab_RNG(wx.Panel):
             command_output = exec_cmd.execCLI([
                 "openssl", "rand",
                 "-provider", "tpm2",
-                "-provider", "default"
+                "-provider", "default",
                 "-hex", str(no_bytes),
             ])
             split_output = command_output.split("\n")
@@ -1349,7 +1349,7 @@ class Tab_RNG(wx.Panel):
             command_output = exec_cmd.execCLI([
                 "openssl", "rand",
                 "-provider", "tpm2",
-                "-provider", "default"
+                "-provider", "default",
                 "-base64", str(no_bytes),
             ])
             split_output = command_output.split("\n")
