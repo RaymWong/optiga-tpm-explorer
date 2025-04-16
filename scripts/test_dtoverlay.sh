@@ -1,19 +1,12 @@
 #!/bin/sh
+set -e
 
+
+# Define the filename and the string to search for
 CONFIG_FILENAME="/boot/firmware/config.txt"
 TPM_OVERLAY="dtoverlay=tpm-slb9670"
 SPI_OVERLAY_OFF="dtparam=spi=off"
 SPI_OVERLAY_ON="dtparam=spi=on"
-
-set -e
-sudo apt update 
-sudo apt --yes install libtss2-* tpm-udev tpm2-abrmd tpm2-tools tpm2-openssl python-wxtools xxd python3-pubsub
-sudo usermod --append --groups tss $(whoami)
-
-cd $PWD/Python_TPM20_GUI/
-sudo chmod a+rwx create_binary_package.sh 
-./create_binary_package.sh
-cd bin/
 
 # Check if the file exists
 if [ -f "$CONFIG_FILENAME" ]; then
@@ -46,4 +39,3 @@ else
     echo "The file $CONFIG_FILENAME does not exist."
 fi
 
-sudo reboot
