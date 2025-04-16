@@ -1,7 +1,7 @@
 import wx
 import tab1_setup as t1
 import tab2_crypto as t2
-import tab3_engine as t3
+import tab3_provider as t3
 import tab4_policy as t4
 import tab5_attest as t5
 import tab6_cloud as t6
@@ -22,10 +22,10 @@ class MainFrame(wx.Frame):
         # Create all the button widgets first
         self.button1 = wx.Button(self, -1, 'Setup and Basic Features')
         self.button2 = wx.Button(self, -1, 'Cryptographic Functions')
-        self.button3 = wx.Button(self, -1, 'OpenSSL-Engine')
+        self.button3 = wx.Button(self, -1, 'OpenSSL-Provider')
         self.button4 = wx.Button(self, -1, 'Data Sealing with Policy')
         self.button5 = wx.Button(self, -1, 'Attestation')
-        self.button6 = wx.Button(self, -1, 'AWS: IOT Core')
+        #self.button6 = wx.Button(self, -1, 'AWS: IOT Core')
         # Title screen widget setup
         # "\xe2\x84\xa2" represents the Trademark symbol in UTF-8 for Python 2.x, will not display properly on Windows (or Python 3.x)
         title_screen = wx.StaticText(self, -1, style=wx.ALIGN_CENTER, label="OPTIGA"+ u"\u1d40\u1d39"+" TPM 2.0 Explorer")
@@ -51,14 +51,14 @@ class MainFrame(wx.Frame):
         tab2_image = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(tab2_image))
         # ~ tab2_image = wx.StaticBitmap(self, wx.ID_ANY, img.crypto.getBitmap())
 
-        # Engine logo
+        # Provider logo
         tab3_image = wx.Image('../images/engine.png', wx.BITMAP_TYPE_PNG)
         tab3_image = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(tab3_image))
         # ~ tab3_image = wx.StaticBitmap(self, wx.ID_ANY, img.engine.getBitmap())
 
         # Cloud logo
-        tab6_image = wx.Image('../images/cloud.png', wx.BITMAP_TYPE_PNG)
-        tab6_image = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(tab6_image))
+        #tab6_image = wx.Image('../images/cloud.png', wx.BITMAP_TYPE_PNG)
+        #tab6_image = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(tab6_image))
         # ~ tab6_image = wx.StaticBitmap(self, wx.ID_ANY, img.cloud.getBitmap())
    
         # Attestation logo
@@ -97,11 +97,12 @@ class MainFrame(wx.Frame):
 
         gdsizer.Add(tab4_image, 0, wx.ALIGN_CENTRE | wx.TOP, 5)
         gdsizer.Add(tab5_image, 0, wx.ALIGN_CENTRE | wx.TOP, 5)
-        gdsizer.Add(tab6_image, 0, wx.ALIGN_CENTRE | wx.TOP, 5)
+        gdsizer.AddSpacer(1)
+        #gdsizer.Add(tab6_image, 0, wx.ALIGN_CENTRE | wx.TOP, 5)
 
         gdsizer.Add(self.button4, 1, wx.EXPAND | wx.ALL, 30)
         gdsizer.Add(self.button5, 1, wx.EXPAND | wx.ALL, 30)
-        gdsizer.Add(self.button6, 1, wx.EXPAND | wx.ALL, 30)
+        #gdsizer.Add(self.button6, 1, wx.EXPAND | wx.ALL, 30)
 
         mainsizer.Add(horisizer, 0, wx.EXPAND | wx.TOP, 20)
         mainsizer.Add(horisizer2)
@@ -115,7 +116,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnButtonClick, self.button3)
         self.Bind(wx.EVT_BUTTON, self.OnButtonClick, self.button4)
         self.Bind(wx.EVT_BUTTON, self.OnButtonClick, self.button5)
-        self.Bind(wx.EVT_BUTTON, self.OnButtonClick, self.button6)
+        #self.Bind(wx.EVT_BUTTON, self.OnButtonClick, self.button6)
 
         # Set tooltips
         self.button1.SetToolTip(wx.ToolTip("Take ownership here."))
@@ -123,7 +124,7 @@ class MainFrame(wx.Frame):
         self.button3.SetToolTip(wx.ToolTip("Using TPM and OpenSSL to establish a client-server connection"))
         self.button4.SetToolTip(wx.ToolTip("Making use of policies to seal and unseal objects"))
         self.button5.SetToolTip(wx.ToolTip("Using endorsement key hierarchies to prove/attest"))
-        self.button6.SetToolTip(wx.ToolTip("Example use-case with AWS"))
+        #self.button6.SetToolTip(wx.ToolTip("Example use-case with AWS"))
 
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
@@ -158,7 +159,7 @@ class MainFrame(wx.Frame):
             self.button3.Disable()
             self.button4.Disable()
             self.button5.Disable()
-            self.button6.Disable()
+            #self.button6.Disable()
                     
     def OnCloseWindow(self, evt):
         self.Destroy()
@@ -171,18 +172,18 @@ class MainFrame(wx.Frame):
             self.activetab = t1.Tab1Frame(self, "Basic")
         elif (event_obj == self.FindWindowByLabel(label='Cryptographic Functions')):
             self.activetab = t2.Tab2Frame(self, "Crypto")
-        elif (event_obj == self.FindWindowByLabel(label='OpenSSL-Engine')):
+        elif (event_obj == self.FindWindowByLabel(label='OpenSSL-Provider')):
             #~ if (misc.EngineDlg(self, "Warning!").ShowModal() == -1):
                 #~ return
-            self.activetab = t3.Tab3Frame(self, "Engine")
+            self.activetab = t3.Tab3Frame(self, "Provider")
         elif (event_obj == self.FindWindowByLabel(label='Data Sealing with Policy')):
             self.activetab = t4.Tab4Frame(self, "Data Sealing with Policy")
         elif (event_obj == self.FindWindowByLabel(label='Attestation')):
             self.activetab = t5.Tab5Frame(self, "Attest")
-        elif (event_obj == self.FindWindowByLabel(label='AWS: IOT Core')):
+        #elif (event_obj == self.FindWindowByLabel(label='AWS: IOT Core')):
             #~ if (misc.EngineDlg(self, "Warning!").ShowModal() == -1):
                 #~ return
-            self.activetab = t6.Tab6Frame(self, 'Cloud')
+            #self.activetab = t6.Tab6Frame(self, 'Cloud')
         else:
             return
         self.Hide()
