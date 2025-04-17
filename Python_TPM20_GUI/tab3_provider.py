@@ -1046,9 +1046,8 @@ class Tab_RSA_MISC(wx.Panel):
         exec_cmd.execCLI(["rm", "rsa2.pem"])
         exec_cmd.execCLI(["rm", "mycipher"])
         exec_cmd.execCLI(["rm", "mysig"])
-        owner_auth = exec_cmd.get_auth_from_config('owner')
-        
-        if (owner_auth != ""):
+
+        if (exec_cmd.ownerAuth != ""):
             # Step 1: Evict control of the handle 0x81000008
             command_output = exec_cmd.execCLI([
                 "tpm2_evictcontrol", "-C", "o", "-P", "owner123", "-c", "0x81000008"
@@ -1092,7 +1091,6 @@ class Tab_RSA_MISC(wx.Panel):
 
             
         else:
-            self.command_out.AppendText("OwnerAuth found to be empty")
             command_output = exec_cmd.execCLI([
                 "openssl", "genpkey",
                 "-pkeyopt", "parent-auth:",
