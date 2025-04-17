@@ -1,12 +1,13 @@
 import subprocess
 import os
 from subprocess import PIPE
+import json
 
 # Variables to hold the 3 authorisation values
-ownerAuth = "owner123"
-nvAuth = "nv123"
-endorseAuth = "endorsement123"
-lockoutAuth = "lockout123"
+ownerAuth = ""
+nvAuth = ""
+endorseAuth = ""
+lockoutAuth = ""
 openssl_cnf=("openssl_conf = openssl_init\n"
             "[openssl_init]\n"
             "providers = provider_sect\n"
@@ -118,3 +119,50 @@ def createProcess_PIPE(cmd, file):
         print("ERROR")
         print(output)
     return(output)
+
+
+def get_auth_from_config(auth_type):
+    #Get auth values from config file or reset if file doesn't exist.
+    try:
+        with open('tpm_auth.json', 'r') as f:
+            config = json.load(f)
+            
+            # Map auth_type to config key
+            auth_map = {
+                'owner': 'ownerAuth',
+                'endorse': 'endorseAuth',
+                'lockout': 'lockoutAuth',
+                'nv': 'nvAuth'
+            }
+            
+            if auth_type not in auth_map:
+                print(f"Invalid auth_type: {auth_type}. Use owner, endorse, lockout or nv as auth_type.")
+                return None
+                
+            return config.get(auth_map[auth_type], '')
+            
+    except FileNotFoundError:
+        # If config doesn't exist, clear TPM and create empty config
+        execTpmToolsAndCheck(["tpm2_clear", "-c", "p"])
+        # Set all module variables to empty
+        global ownerAuth, endorseAuth, lockoutAuth, nvAuth
+        ownerAuth = endorseAuth = lockoutAuth = nvAuth = ""
+        save_auth_values()
+        return ''
+    except json.JSONDecodeError:
+        print("Error reading config file")
+        return None
+        
+        
+def save_auth_values():
+    values = {
+        'ownerAuth': ownerAuth,
+        'endorseAuth': endorseAuth,
+        'lockoutAuth': lockoutAuth,
+        'nvAuth': nvAuth
+    }
+    try:
+        with open('tpm_auth.json', 'w') as f:
+            json.dump(values, f, indent=2)
+    except Exception as e:
+        print(f"Error saving auth values: {e}")

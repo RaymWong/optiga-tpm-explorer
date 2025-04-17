@@ -251,6 +251,7 @@ class CredentialDlg(wx.Dialog):
         exec_cmd.ownerAuth = user_owner.replace(" ", "")
         exec_cmd.endorseAuth = user_endorse.replace(" ", "")
         exec_cmd.lockoutAuth = user_lockout.replace(" ", "")
+        exec_cmd.save_auth_values()
         self.EndModal(1)
         self.Destroy()
 
