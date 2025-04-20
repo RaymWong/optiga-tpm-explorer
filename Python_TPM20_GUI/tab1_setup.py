@@ -5,7 +5,7 @@ import info_dialogs as info
 import images as img
 import binascii
 import subprocess
-#~ import os
+import os
 from subprocess import PIPE
 # the tpm has 24 banks
 pcr_index_list = [str(value) for value in range(0, 24)]
@@ -130,6 +130,7 @@ class Tab_Setup(wx.Panel):
         
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("'tpm2_changeauth -c lockout " + exec_cmd.lockoutAuth + "' executed \n")
+        exec_cmd.save_auth_values()
         self.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
         #~ f = open("values.txt", "w+")
         #~ f.write('ownerAuth = "')
@@ -153,6 +154,7 @@ class Tab_Setup(wx.Panel):
         #~ ])
         
     def OnClear(self, evt):
+        print(os.getcwd)
         if (misc.ClearWarningDlg(self, "Warning!").ShowModal() != wx.ID_OK):
             return
         command_output = exec_cmd.execTpmToolsAndCheck([
@@ -160,7 +162,8 @@ class Tab_Setup(wx.Panel):
             "-c","p"
         ])
         exec_cmd.createProcess("sudo rm *.tss", None)
-
+        print(exec_cmd.ownerAuth)
+        exec_cmd.save_auth_values()
 
         self.text_display.AppendText(str(command_output))
         self.text_display.AppendText("'tpm2_clear -c p' executed \n")
