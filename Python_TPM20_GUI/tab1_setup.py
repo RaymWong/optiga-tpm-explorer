@@ -162,6 +162,9 @@ class Tab_Setup(wx.Panel):
             "-c","p"
         ])
         exec_cmd.createProcess("sudo rm *.tss", None)
+        exec_cmd.ownerAuth = ""
+        exec_cmd.endorseAuth = ""
+        exec_cmd.lockoutAuth = ""
         print(exec_cmd.ownerAuth)
         exec_cmd.save_auth_values()
 

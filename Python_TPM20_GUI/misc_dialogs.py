@@ -210,6 +210,8 @@ class CredentialDlg(wx.Dialog):
                 "-c","o",
                 "-p", exec_cmd.ownerAuth,
             ])
+            exec_cmd.ownerAuth = ""
+            exec_cmd.save_auth_values()
             self.parent.text_display.AppendText(str(command_output))
             self.parent.text_display.AppendText("'tpm2_changeauth -c o -p " + exec_cmd.ownerAuth + "' executed \n")
             self.parent.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
@@ -223,6 +225,8 @@ class CredentialDlg(wx.Dialog):
                 "-c", "e",
                 "-p", exec_cmd.endorseAuth,
             ])
+            exec_cmd.endorseAuth = ""
+            exec_cmd.save_auth_values()
             self.parent.text_display.AppendText(str(command_output))
             self.parent.text_display.AppendText("'tpm2_changeauth -c e -p " + exec_cmd.endorseAuth + "' executed \n")
             self.parent.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
@@ -236,6 +240,8 @@ class CredentialDlg(wx.Dialog):
                 "-c", "l",
                 "-p", exec_cmd.lockoutAuth,
             ])
+            exec_cmd.lockoutAuth = ""
+            exec_cmd.save_auth_values()
             self.parent.text_display.AppendText(str(command_output))
             self.parent.text_display.AppendText("'tpm2_changeauth -c l -p " + exec_cmd.lockoutAuth + "' executed \n")
             self.parent.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")

@@ -1051,21 +1051,21 @@ class Tab_RSA_MISC(wx.Panel):
         if (owner_auth != ""):
             # Step 1: Evict control of the handle 0x81000008
             command_output = exec_cmd.execCLI([
-                "tpm2_evictcontrol", "-C", "o", "-P", "owner123", "-c", "0x81000008"
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000008"
             ])
-            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P owner123 -c 0x81000008' executed \n")
+            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000008' executed \n")
 
             # Step 2: Create a primary key with ECC
             command_output = exec_cmd.execCLI([
-                "tpm2_createprimary", "-C", "o", "-P", "owner123", "-g", "sha256", "-G", "ecc", "-c", "primary_sh.ctx"
+                "tpm2_createprimary", "-C", "o", "-P", owner_auth, "-g", "sha256", "-G", "ecc", "-c", "primary_sh.ctx"
             ])
-            self.command_out.AppendText(f"'tpm2_createprimary -C o -P owner123 -g sha256 -G ecc -c primary_sh.ctx' executed \n")
+            self.command_out.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G ecc -c primary_sh.ctx' executed \n")
 
             # Step 3: Evict control of the primary key
             command_output = exec_cmd.execCLI([
-                "tpm2_evictcontrol", "-C", "o", "-P", "owner123", "-c", "primary_sh.ctx", "0x81000008"
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "primary_sh.ctx", "0x81000008"
             ])
-            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P owner123 -c primary_sh.ctx 0x81000008' executed \n")
+            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P {owner_auth} -c primary_sh.ctx 0x81000008' executed \n")
 
             # Step 4: Generate RSA key using TPM and parent key
             command_output = exec_cmd.execCLI([
@@ -1101,7 +1101,7 @@ class Tab_RSA_MISC(wx.Panel):
                 "-out", "rsa2.pem"
             ])
             self.command_out.AppendText(str(command_output))
-            self.command_out.AppendText(f"'openssl genpkey -algorithm RSA -provider tpm2 -pkeyopt parent-auth:{exec_cmd.ownerAuth} -out rsa2.pem' executed \n")
+            self.command_out.AppendText(f"'openssl genpkey -algorithm RSA -provider tpm2 -pkeyopt parent-auth:{owner_auth} -out rsa2.pem' executed \n")
             command_output = exec_cmd.execCLI([
                 "openssl", "pkey",
                 "-provider", "tpm2",
@@ -1151,7 +1151,9 @@ class Tab_RSA_MISC(wx.Panel):
         wx.CallLater(10, self.OnDec)
 
     def OnDec(self):
-        if (exec_cmd.ownerAuth != ""):
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        
+        if (owner_auth != ""):
             with open("temp.conf", "w") as f:
                 f.write(exec_cmd.openssl_cnf)
 
