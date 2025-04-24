@@ -154,7 +154,6 @@ class Tab_Setup(wx.Panel):
         #~ ])
         
     def OnClear(self, evt):
-        print(os.getcwd)
         if (misc.ClearWarningDlg(self, "Warning!").ShowModal() != wx.ID_OK):
             return
         command_output = exec_cmd.execTpmToolsAndCheck([
@@ -165,7 +164,6 @@ class Tab_Setup(wx.Panel):
         exec_cmd.ownerAuth = ""
         exec_cmd.endorseAuth = ""
         exec_cmd.lockoutAuth = ""
-        print(exec_cmd.ownerAuth)
         exec_cmd.save_auth_values()
 
         self.text_display.AppendText(str(command_output))
@@ -174,14 +172,15 @@ class Tab_Setup(wx.Panel):
 
     # this locks the clear command (above this), i.e. the user cannot platform clear
     def OnEnableLock(self, evt):
+        lockout_auth = exec_cmd.get_auth_from_config('lockout')
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_clearcontrol",
-            "-C", "l", "s", "-P", exec_cmd.lockoutAuth,
+            "-C", "l", "s", "-P", lockout_auth,
         ])
         self.text_display.AppendText(str(command_output))
         #self.text_display.AppendText(str(command_output))
         
-        self.text_display.AppendText("'tpm2_clearcontrol -C l s -P " + exec_cmd.lockoutAuth + "' executed \n")
+        self.text_display.AppendText("'tpm2_clearcontrol -C l s -P " + lockout_auth + "' executed \n")
         self.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnDisableLock(self, evt):
@@ -196,13 +195,14 @@ class Tab_Setup(wx.Panel):
     def OnDictAtk(self, evt):
         if (misc.DictAttackDlg(self, "Enter in the Values.").ShowModal() == -1):
             return
+        lockout_auth = exec_cmd.get_auth_from_config('lockout')
         if ((tpm2_max_auth_fail, tpm2_lockout_interval, tpm2_lockout_recovery) != (None, None, None)):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_dictionarylockout", "-s",
                 "-n", tpm2_max_auth_fail,
                 "-t", tpm2_lockout_interval,
                 "-l", tpm2_lockout_recovery,
-                "-p", exec_cmd.lockoutAuth,
+                "-p", lockout_auth,
             ])
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("tpm2_dictionarylockout executed \n")
@@ -576,8 +576,9 @@ class Tab_NVM(wx.Panel):
         self.nvm_offset.write("0")
         self.read_amt.write("32")
         self.nvm_data.write("Hello World!")
-        self.owner_input.write(exec_cmd.ownerAuth)
-        self.nv_auth_input.write(exec_cmd.nvAuth)
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        self.owner_input.write(owner_auth = exec_cmd.get_auth_from_config('owner'))
+        self.nv_auth_input.write(owner_auth = exec_cmd.get_auth_from_config('nv'))
         self.nvm_attr.SetCheckedStrings(["authread", "authwrite", "read_stclear"])
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
@@ -1073,10 +1074,10 @@ class Tab_Handles(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", specific_handle,
-            "-P", exec_cmd.ownerAuth,
+            "-P", exec_cmd.get_auth_from_config('owner'),
         ])
         self.txt_display.AppendText(str(command_output))
-        self.txt_display.AppendText("'tpm2_evictcontrol -C o -c " + specific_handle + " -P " + exec_cmd.ownerAuth + "' executed \n")
+        self.txt_display.AppendText("'tpm2_evictcontrol -C o -c " + specific_handle + " -P " + exec_cmd.get_auth_from_config('owner') + "' executed \n")
         self.txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
                                         
     def OnReadPersistent(self, evt):
