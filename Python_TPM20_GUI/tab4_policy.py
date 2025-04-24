@@ -143,25 +143,26 @@ class Tab4Frame(wx.Frame):
     def OnNewPrimary(self):
         if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
             return
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
             "-C", "o",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "-g", "sha256",
             "-G", "ecc",
             "-c", "primary.ctx",
         ])
         self.command_out.AppendText(str(command_output))
-        self.command_out.AppendText("'tpm2_createprimary -C o -P " + exec_cmd.ownerAuth + " -g sha256 -G ecc -c primary.ctx' executed \n")
+        self.command_out.AppendText("'tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G ecc -c primary.ctx' executed \n")
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "primary.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000001",
         ])
         self.command_out.AppendText(str(command_output))
-        self.command_out.AppendText("'tpm2_evictcontrol -a o -c primary.ctx -P " + exec_cmd.ownerAuth + " 0x81000001' executed \n")
+        self.command_out.AppendText("'tpm2_evictcontrol -a o -c primary.ctx -P " + owner_auth + " 0x81000001' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnSealData(self, evt):

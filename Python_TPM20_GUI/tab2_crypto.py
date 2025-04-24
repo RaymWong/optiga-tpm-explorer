@@ -188,11 +188,12 @@ class Tab_RSA(wx.Panel):
     
     # note: this function/command runs for quite a while as compared to ECC.
     def OnCreatePrimary(self):
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAprimary.ctx"])
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
             "-C", "o",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "-g", "sha256",
             "-G", "rsa",
             "-c", "RSAprimary.ctx"
@@ -203,12 +204,12 @@ class Tab_RSA(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "RSAprimary.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000004",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        self.command_display.AppendText("tpm2_createprimary -C o -P " + exec_cmd.ownerAuth + " -g sha256 -G rsa -c RSAprimary.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -C o -c RSAprimary.ctx -P " + exec_cmd.ownerAuth + " 0x81000004\n")
+        self.command_display.AppendText("tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G rsa -c RSAprimary.ctx\n")
+        self.command_display.AppendText("tpm2_evictcontrol -C o -c RSAprimary.ctx -P " + owner_auth + " 0x81000004\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnCreateKeyPair2(self, evt):
@@ -225,6 +226,7 @@ class Tab_RSA(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAPriv.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAPub.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAkey_name_structure.data"])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_create",
             "-C", "0x81000004",
@@ -250,13 +252,13 @@ class Tab_RSA(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "RSAkeycontext.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000005",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
         self.command_display.AppendText("tpm2_create -C 0x81000004 -g sha256 -G rsa -r RSAPriv.key -u RSAPub.key\n")
         self.command_display.AppendText("tpm2_load -C 0x81000004 -u RSAPub.key -r RSAPriv.key -n RSAkey_name_structure.data -c RSAkeycontext.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -a o -c RSAkeycontext.ctx -p 0x81000005 -P " + exec_cmd.ownerAuth + "\n")
+        self.command_display.AppendText("tpm2_evictcontrol -a o -c RSAkeycontext.ctx -p 0x81000005 -P " + owner_auth + "\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnEnc(self, evt):
@@ -539,11 +541,12 @@ class Tab_ECC(wx.Panel):
         wx.CallLater(150, self.OnCreatePrimary)
     
     def OnCreatePrimary(self):
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCprimary.ctx"])
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
             "-C", "o",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "-g", "sha256",
             "-G", "ecc",
             "-c", "ECCprimary.ctx"
@@ -555,12 +558,12 @@ class Tab_ECC(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "ECCprimary.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000006"
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        self.command_display.AppendText("tpm2_createprimary -C o -P " + exec_cmd.ownerAuth + " -g sha256 -G 0x0023 -c ECCprimary.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCprimary.ctx -p 0x81000006 -P " + exec_cmd.ownerAuth + "\n")
+        self.command_display.AppendText("tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G 0x0023 -c ECCprimary.ctx\n")
+        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCprimary.ctx -p 0x81000006 -P " + owner_auth + "\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnCreateKeyPair2(self, evt):
@@ -577,6 +580,7 @@ class Tab_ECC(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCpri.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCpub.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCname.data"])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_create",
             "-C", "0x81000006",
@@ -602,13 +606,13 @@ class Tab_ECC(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "ECCkeycontext.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000007",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
         self.command_display.AppendText("tpm2_create -C 0x81000006 -p ECCleaf123 -g sha256 -G ecc -r ECCpri.key -u ECCpub.key\n")
         self.command_display.AppendText("tpm2_load -C 0x81000006 -u ECCpub.key -r ECCpri.key -n ECCname.data -c ECCkeycontext.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCkeycontext.ctx -P " + exec_cmd.ownerAuth + " 0x81000007\n")
+        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCkeycontext.ctx -P " + owner_auth + " 0x81000007\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnSign1(self, evt):

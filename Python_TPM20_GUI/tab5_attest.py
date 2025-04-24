@@ -167,17 +167,19 @@ class Tab5Frame(wx.Frame):
             return
         if (misc.EndorseDlg(self, "Enter Endorsement Authorisation").ShowModal() == -1):
             return
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        endorse_auth = exec_cmd.get_auth_from_config('endorse')
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createek",
-            "-P", exec_cmd.endorseAuth,
-            "-w", exec_cmd.ownerAuth,
+            "-P", endorse_auth,
+            "-w", owner_auth,
             "-c", "0x81010001",
             "-G", "rsa",
             "-u", "ek.pub",
         ])
         self.command_out.AppendText(str(command_output))
         self.command_out.AppendText("\n")
-        self.command_out.AppendText("'tpm2_createek -P " + exec_cmd.endorseAuth + " -w " + exec_cmd.ownerAuth + " -c 0x81010001 -G rsa -u ek.pub' executed \n")
+        self.command_out.AppendText("'tpm2_createek -P " + endorse_auth + " -w " + owner_auth + " -c 0x81010001 -G rsa -u ek.pub' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnGenAK2(self, evt):
@@ -197,14 +199,16 @@ class Tab5Frame(wx.Frame):
         exec_cmd.execCLI(["rm", "ek*", ])
         exec_cmd.execCLI(["rm", "quote_sign_data", ])
         exec_cmd.execCLI(["rm", "tpmquote.data", ])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        endorse_auth = exec_cmd.get_auth_from_config('endorse')
 #         if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
 #             return
 #         if (misc.EndorseDlg(self, "Enter Endorsement Authorisation").ShowModal() == -1):
 #             return
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createak",
-            "-P", exec_cmd.endorseAuth,
-            #~ "-w", exec_cmd.ownerAuth,
+            "-P", endorse_auth,
+            #~ "-w", owner_auth,
             "-C", "0x81010001",
             "-G", "rsa",
             "-u", "ak_pub.bin",
@@ -214,7 +218,7 @@ class Tab5Frame(wx.Frame):
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "-c", "ak.ctx",
             specific_handle
         ])
@@ -222,8 +226,8 @@ class Tab5Frame(wx.Frame):
 
         self.command_out.AppendText(str(command_output))
         self.command_out.AppendText("\n")
-        self.command_out.AppendText("'tpm2_createak -P " + exec_cmd.endorseAuth + " -C 0x81010001 -G rsa -u ak_pub.bin -n ak.name -c ak.ctx' executed \n")
-        self.command_out.AppendText("'tpm2_evictcontrol -C o -P " + exec_cmd.ownerAuth + " -c ak.ctx " + specific_handle + " executed \n")
+        self.command_out.AppendText("'tpm2_createak -P " + endorse_auth + " -C 0x81010001 -G rsa -u ak_pub.bin -n ak.name -c ak.ctx' executed \n")
+        self.command_out.AppendText("'tpm2_evictcontrol -C o -P " + owner_auth + " -c ak.ctx " + specific_handle + " executed \n")
 
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
@@ -299,16 +303,17 @@ class Tab5Frame(wx.Frame):
 
     def OnEvict(self, evt):
         specific_handle = self.ak_handle_input.GetValue()
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
             return
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", specific_handle,
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
         ])
         self.command_out.AppendText(str(command_output))
-        self.command_out.AppendText("'tpm2_evictcontrol -C o -c " + specific_handle + " -P " + exec_cmd.ownerAuth + "' executed \n")
+        self.command_out.AppendText("'tpm2_evictcontrol -C o -c " + specific_handle + " -P " + owner_auth + "' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnInfo(self, evt):
