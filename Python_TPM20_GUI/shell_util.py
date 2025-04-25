@@ -142,7 +142,6 @@ def get_auth_from_config(auth_type):
             return config.get(auth_map[auth_type], '')
             
     except FileNotFoundError:
-        print("tpm_auth does not exist.")
         # If config doesn't exist, clear TPM and create empty config
         execTpmToolsAndCheck(["tpm2_clear", "-c", "p"])
         # Set all module variables to empty

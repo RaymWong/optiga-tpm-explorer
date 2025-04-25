@@ -6,6 +6,7 @@ import images as img
 import binascii
 import subprocess
 import os
+import json
 from subprocess import PIPE
 # the tpm has 24 banks
 pcr_index_list = [str(value) for value in range(0, 24)]
@@ -576,10 +577,9 @@ class Tab_NVM(wx.Panel):
         self.nvm_offset.write("0")
         self.read_amt.write("32")
         self.nvm_data.write("Hello World!")
-        owner_auth = exec_cmd.get_auth_from_config('owner')
         self.owner_input.write(exec_cmd.get_auth_from_config('owner'))
         self.nv_auth_input.write(exec_cmd.get_auth_from_config('nv'))
-        self.nvm_attr.SetCheckedStrings(["authread", "authwrite", "read_stclear"])
+        self.nvm_attr.SetCheckedStrings(["ownerwrite", "ownerread", "authread", "authwrite", "read_stclear"])
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
         self.Show(True)
@@ -739,7 +739,7 @@ class Tab_NVM(wx.Panel):
         self.right_txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnResetAttr(self, evt):
-        self.nvm_attr.SetCheckedStrings(["authread", "authwrite"])
+        self.nvm_attr.SetCheckedStrings(["authread", "authwrite", "ownerwrite", "ownerread"])
 
     def OnClear(self, evt):
         self.right_txt_display.Clear()
@@ -753,6 +753,7 @@ class Tab_NVM(wx.Panel):
         nvm_size = self.nvm_size.GetValue()
         temp_attr = []
         nvm_attr = ""
+        filename = 'tpm_auth.json'
         try:
             int(nvm_size)
         except ValueError:
@@ -766,9 +767,9 @@ class Tab_NVM(wx.Panel):
             return
         nvm_attr = "|".join(temp_attr)
         self.right_txt_display.AppendText("Attributes are: " + nvm_attr + "\n")
-        if (self.owner_input.GetValue()=="" and self.nv_auth_input.GetValue()==""):
-            self.right_txt_display.AppendText("Owner Authorisation and NV Authorisation Empty. Input Again.\n")
-            return
+        #if (self.owner_input.GetValue()==""):
+            #self.right_txt_display.AppendText("Owner Authorisation Empty. Input Again.\n")
+            #return
         
         #if NV field is empty
         if (nv_auth_val==""):
@@ -792,6 +793,33 @@ class Tab_NVM(wx.Panel):
                 "-P", owner_val,
                 "-p", nv_auth_val,
             ])
+            
+        #Update nvAuth in tpm_auth
+        filename = 'tpm_auth.json'
+        default_values = {
+        "ownerAuth": "",
+        "endorseAuth": "",
+        "lockoutAuth": "",
+        "nvAuth": ""
+        }
+            
+        if os.path.exists(filename):
+                try:
+                    with open(filename, 'r') as f:
+                        values = json.load(f)
+                except Exception as e:
+                    self.right_txt_display.AppendText(f"Error reading existing auth values: {e}")
+                    values = default_values.copy()
+        else:
+                values = default_values.copy()
+                
+        values["nvAuth"] = nv_auth_val
+
+        try:
+                with open(filename, 'w') as f:
+                        json.dump(values, f, indent=2)
+        except Exception as e:
+                self.right_txt_display.AppendText(f"Error saving auth values: {e}")
         
         self.right_txt_display.AppendText(str(command_output))
         self.right_txt_display.AppendText("'tpm2_nvdefine' executed \n")
@@ -837,6 +865,7 @@ class Tab_NVM(wx.Panel):
         owner_val = self.owner_input.GetValue()
         nv_auth_val = self.nv_auth_input.GetValue()
         nvm_data = self.nvm_data.GetValue()
+        filename = 'tpm_auth.json'
         if ((nvm_index == 0) | (nvm_data == 0)):
             return
         data_file = open("nvm_data.txt", "w")
