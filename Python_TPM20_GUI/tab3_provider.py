@@ -333,11 +333,11 @@ class Tab_RSA_CS(wx.Panel):
         wx.CallLater(10, self.OnGenCA)
     
     def OnGenCA(self):
-        exec_cmd.execCLI(["rm", "rsa_CA.pem", ])
-        exec_cmd.execCLI(["rm", "CA_rsa_cert.pem", ])
-        exec_cmd.execCLI(["rm", "rsa_server.pem", ])
-        exec_cmd.execCLI(["rm", "server_rsa.csr", ])
-        exec_cmd.execCLI(["rm", "CAsigned_rsa_cert.crt", ])
+        exec_cmd.execCLI(["rm", "-f", "rsa_CA.pem"])
+        exec_cmd.execCLI(["rm", "-f", "CA_rsa_cert.pem", ])
+        exec_cmd.execCLI(["rm", "-f", "rsa_server.pem", ])
+        exec_cmd.execCLI(["rm", "-f", "server_rsa.csr", ])
+        exec_cmd.execCLI(["rm", "-f", "CAsigned_rsa_cert.crt", ])
 
         exec_cmd.execCLI([
             "openssl", "genpkey",
@@ -348,7 +348,7 @@ class Tab_RSA_CS(wx.Panel):
         self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
         self.text_server.AppendText("Creating Self-Signed Certificate:\n")
 
-        cmd ="openssl req -key rsa_CA.pem -new -x509 -days 7300 -sha256   -out CA_rsa_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=CSS/CN=TPMEvalKitCA'"
+        cmd ="openssl req -key rsa_CA.pem -new -x509 -days 7300 -sha256 -out CA_rsa_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=CSS/CN=TPMEvalKitCA'"
         ps_command = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         command_output = ps_command.stdout.read().decode('utf-8')
         retcode = ps_command.wait()            
@@ -362,12 +362,35 @@ class Tab_RSA_CS(wx.Panel):
         wx.CallLater(10, self.OnGenKeyPair)
     
     def OnGenKeyPair(self):
+        exec_cmd.execCLI(["rm", "-f", "RSAprimary.ctx"])
+        exec_cmd.execCLI(["rm", "-f", "rsa_server_tss.pem"])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        
+        output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        if "0x8100000A" in output:
+            exec_cmd.execCLI(["tpm2_evictcontrol", "-C", "o", "-c", "0x8100000A", "-P", owner_auth])
+            self.text_server.AppendText(f"'tpm2_evictcontrol -C o -c 0x8100000A -P {owner_auth}' executed \n")
+            
+        output1 = exec_cmd.execCLI([
+            "tpm2_createprimary", "-C", "o", "-P", owner_auth,
+            "-g", "sha256", "-G", "rsa", "-c", "RSAprimary.ctx"
+        ])
+        self.text_server.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G rsa -c RSAprimary.ctx' executed \n")
+
+        output2 = exec_cmd.execCLI([
+            "tpm2_evictcontrol", "-C", "o", "-c", "RSAprimary.ctx",
+            "-P", owner_auth, "0x8100000A"
+        ])
+        self.text_server.AppendText(f"'tpm2_evictcontrol -C o -c RSAprimary.ctx -P {owner_auth} 0x8100000A' executed \n")
+        
         exec_cmd.execCLI([
             "openssl", "genpkey",
+            "-provider", "tpm2",
             "-algorithm", "RSA",
-            "-out", "rsa_server.pem",
+            "-pkeyopt", "parent:0x8100000A",
+            "-out", "rsa_server_tss.pem",
         ])
-        self.text_server.AppendText("'openssl genpkey -algorithm RSA -out rsa_server.pem'\n")
+        self.text_server.AppendText("'openssl genpkey -provider tpm2 -algorithm RSA -pkeyopt parent:0x8100000A -out rsa_server_tss.pem'\n")
         self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnGenCSR1(self, evt):
@@ -375,51 +398,19 @@ class Tab_RSA_CS(wx.Panel):
         wx.CallLater(10, self.OnGenCSR)
     
     def OnGenCSR(self):
-        owner_auth = exec_cmd.get_auth_from_config('owner')
-        if (owner_auth !=""):
-            exec_cmd.execCLI(["rm", "RSAprimary.ctx", ])
-            output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
-            if "0x8100000A" in output:
-                exec_cmd.execCLI(["tpm2_evictcontrol", "-C", "o", "-c", "0x8100000A", "-P", owner_auth])
-                self.command_out.AppendText(f"'tpm2_evictcontrol -C o -c 0x8100000A -P {owner_auth}' executed \n")
-            else:
-                self.text_server.AppendText("Handle 0x8100000A not found, skipping evictcontrol.\n")
-            
-            output1 = exec_cmd.execCLI([
-                "tpm2_createprimary", "-C", "o", "-P", owner_auth,
-                "-g", "sha256", "-G", "rsa", "-c", "RSAprimary.ctx"
-            ])
-            self.command_out.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G rsa -c RSAprimary.ctx' executed \n")
-
-            output2 = exec_cmd.execCLI([
-                "tpm2_evictcontrol", "-C", "o", "-c", "RSAprimary.ctx",
-                "-P", owner_auth, "0x8100000A"
-            ])
-            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -c RSAprimary.ctx -P {owner_auth} 0x8100000A' executed \n")
-
-            #~ self.text_server.AppendText("Creating Certificate Signing Request:\n")
-            command_output = exec_cmd.execCLI([
-                "openssl", "req", "-new", 
-                "-provider", "tpm2",
-                "-pkeyopt", "parent:0x8100000A",
-                "-subj", "/CN=TPM_UI/O=Infineon/C=SG",
-                "-out", "server_rsa.csr",
-                "-keyout", "rsa_server_tss.pem"
-            ])
-            self.text_server.AppendText(str(command_output))
-            self.text_server.AppendText("openssl req -new -provider tpm2  -pkeyopt parent:0x8100000A -subj /CN=TPM_UI/O=Infineon/C=SG -out server_rsa.csr -keyout rsa_server_tss.pem\n")
-            self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
-        else:
-            command_output = exec_cmd.execCLI([
-                "openssl", "req", "-new", 
-                "-provider", "tpm2",
-                "-subj", "/CN=TPM_UI/O=Infineon/C=SG",
-                "-out", "server_rsa.csr",
-                "-keyout", "rsa_server_tss.pem"
-            ])
-            self.text_server.AppendText(str(command_output))
-            self.text_server.AppendText("openssl req -new -provider tpm2 -subj /CN=TPM_UI/O=Infineon/C=SG -out server_rsa.csr -keyout rsa_server_tss.pem\n")
-            self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+        exec_cmd.execCLI(["rm", "-f", "server_rsa.csr"])
+        command_output = exec_cmd.execCLI([
+            "openssl", "req", "-new", 
+            "-provider", "tpm2",
+            "-provider", "base",
+            "-provider", "default",
+            "-key", "rsa_server_tss.pem",
+            "-subj", "/CN=TPM_UI/O=Infineon/C=SG",
+            "-out", "server_rsa.csr"
+        ])
+        self.text_server.AppendText(str(command_output))
+        self.text_server.AppendText("openssl req -new -provider base -provider tpm2 -provider default -key rsa_server_tss.pem -subj /CN=TPM_UI/O=Infineon/C=SG -out server_rsa.csr\n")
+        self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
             
     def OnGenCert(self, evt):
         self.text_server.AppendText("Creating Server Certificate...\n")
@@ -676,11 +667,11 @@ class Tab_ECC_CS(wx.Panel):
         wx.CallLater(10, self.OnGenCA)
         
     def OnGenCA(self):
-        exec_cmd.execCLI(["rm", "ecc_CA_key.pem", ])
-        exec_cmd.execCLI(["rm", "CA_ecc_cert.pem", ])
-        exec_cmd.execCLI(["rm", "ecc_server_tss.pem", ])
-        exec_cmd.execCLI(["rm", "server_ecc.csr", ])
-        exec_cmd.execCLI(["rm", "CAsigned_ecc_cert.crt", ])
+        exec_cmd.execCLI(["rm", "-f", "ecc_CA_key.pem", ])
+        exec_cmd.execCLI(["rm", "-f", "CA_ecc_cert.pem", ])
+        exec_cmd.execCLI(["rm", "-f", "ecc_server_tss.pem", ])
+        exec_cmd.execCLI(["rm", "-f", "server_ecc.csr", ])
+        exec_cmd.execCLI(["rm", "-f", "CAsigned_ecc_cert.crt", ])
         exec_cmd.execCLI([
             "openssl", "genpkey",
             "-algorithm", "EC",
@@ -701,21 +692,44 @@ class Tab_ECC_CS(wx.Panel):
             "-subj", "/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=CSS/CN=TPMEvalKitCA"
         ])
         self.text_server.AppendText(str(command_output))
-        self.text_server.AppendText("openssl req -key ecc_CA_key.pem -new -x509 -days 7300 -sha256   -out CA_ecc_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=CSS/CN=TPMEvalKitCA'\n")
+        self.text_server.AppendText("openssl req -key ecc_CA_key.pem -new -x509 -days 7300 -sha256 -out CA_ecc_cert.pem -subj '/C=SG/ST=Singapore/L=Singapore/O=Infineon Technologies/OU=CSS/CN=TPMEvalKitCA'\n")
         self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
             
     def OnGenKeyPair1(self, evt):
         self.text_server.AppendText("Generating SERVER key-pair...\n")
         wx.CallLater(10, self.OnGenKeyPair)
-    
+        
     def OnGenKeyPair(self):
-        exec_cmd.execCLI([
-                "openssl", "genpkey",
-                "-algorithm", "EC",
-                "-out", "ecc_server.pem",
-                "-pkeyopt", "ec_paramgen_curve:P-384"
+        exec_cmd.execCLI(["rm", "-f", "ECprimary.ctx"])
+        exec_cmd.execCLI(["rm", "-f", "ecc_server_tss.pem"])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        
+        output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        if "0x8100000B" in output:
+            exec_cmd.execCLI(["tpm2_evictcontrol", "-C", "o", "-c", "0x8100000B", "-P", owner_auth])
+            self.text_server.AppendText(f"'tpm2_evictcontrol -C o -c 0x8100000B -P {owner_auth}' executed \n")
+            
+        output1 = exec_cmd.execCLI([
+            "tpm2_createprimary", "-C", "o", "-P", owner_auth,
+            "-g", "sha256", "-G", "ecc", "-c", "ECprimary.ctx"
         ])
-        self.text_server.AppendText("'openssl genpkey -algorithm EC -out ecc_server.pem -pkeyopt ec_paramgen_curve:P-384'\n")
+        self.text_server.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G ecc -c ECprimary.ctx' executed \n")
+
+        output2 = exec_cmd.execCLI([
+            "tpm2_evictcontrol", "-C", "o", "-c", "ECprimary.ctx",
+            "-P", owner_auth, "0x8100000B"
+        ])
+        self.text_server.AppendText(f"'tpm2_evictcontrol -C o -c ECCprimary.ctx -P {owner_auth} 0x8100000B' executed \n")
+        
+        exec_cmd.execCLI([
+            "openssl", "genpkey",
+            "-provider", "tpm2",
+            "-algorithm", "EC",
+            "-pkeyopt", "parent:0x8100000B",
+            "-pkeyopt", "ec_paramgen_curve:P-384",
+            "-out", "ecc_server_tss.pem",
+        ])
+        self.text_server.AppendText("'openssl genpkey -provider tpm2 -algorithm EC -pkeyopt parent:0x8100000B -pkeyopt ec_paramgen_curve:P-384 -out ecc_server_tss.pem'\n")
         self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
     
     def OnGenCSR1(self, evt):
@@ -723,52 +737,19 @@ class Tab_ECC_CS(wx.Panel):
         wx.CallLater(10, self.OnGenCSR)
         
     def OnGenCSR(self):
-        owner_auth = exec_cmd.get_auth_from_config('owner')
-        if (owner_auth !=""):
-            exec_cmd.execCLI(["rm", "ECCprimary.ctx", ])
-            output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
-            if "0x8100000B" in output:
-                exec_cmd.execCLI(["tpm2_evictcontrol", "-C", "o", "-c", "0x8100000B", "-P", owner_auth])
-                self.command_out.AppendText(f"'tpm2_evictcontrol -C o -c 0x8100000B -P {owner_auth}' executed \n")
-            else:
-                self.text_server.AppendText("Handle 0x8100000B not found, skipping evictcontrol.\n")
-
-            # Create a new primary key
-            output_create = exec_cmd.execCLI([
-                "tpm2_createprimary", "-C", "o", "-P", owner_auth,
-                "-g", "sha256", "-G", "ecc", "-c", "ECCprimary1.ctx"
-            ])
-            self.command_out.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G ecc -c ECCprimary.ctx' executed \n")
-            
-            # Make it persistent
-            output_evict = exec_cmd.execCLI([
-                "tpm2_evictcontrol", "-C", "o", "-c", "ECCprimary.ctx",
-                "-P", owner_auth, "0x8100000B"
-            ])
-            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -c ECCprimary.ctx -P {owner_auth} 0x8100000b' executed \n")
-
-            command_output = exec_cmd.execCLI([
-                "openssl", "req", "-new",
-                "-provider", "tpm2",
-                "-pkeyopt", "parent:0x8100000B",
-                "-subj", "/CN=TPM_UI/O=Infineon/C=SG",
-                "-out", "server_ecc.csr",
-                "-keyout", "ecc_server_tss.pem"
-            ])
-            self.text_server.AppendText(str(command_output) + "\n")
-            self.text_server.AppendText("openssl req -new -provider tpm2 -pkeyopt parent:0x8100000B -subj /CN=TPM_UI/O=Infineon/C=SG -out server_ecc.csr -keyout ecc_server_tss.pem\n")
-            self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
-        else:
-            command_output = exec_cmd.execCLI([
-                "openssl", "req", "-new", 
-                "-provider", "tpm2",
-                "-subj", "/CN=TPM_UI/O=Infineon/C=SG",
-                "-out", "server_ecc.csr",
-                "-keyout", "ecc_server_tss.pem"
-            ])
-            self.text_server.AppendText(str(command_output))
-            self.text_server.AppendText("openssl req -new -provider tpm2 -subj /CN=TPM_UI/O=Infineon/C=SG -out server_ecc.csr -keyout rsa_server_ecc.pem\n")
-            self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+        exec_cmd.execCLI(["rm", "-f", "server_ecc.csr"])
+        command_output = exec_cmd.execCLI([
+            "openssl", "req", "-new", 
+            "-provider", "tpm2",
+            "-provider", "base",
+            "-provider", "default",
+            "-key", "ecc_server_tss.pem",
+            "-subj", "/CN=TPM_UI/O=Infineon/C=SG",
+            "-out", "server_ecc.csr"
+        ])
+        self.text_server.AppendText(str(command_output))
+        self.text_server.AppendText("openssl req -new -provider base -provider tpm2 -provider default -key ecc_server_tss.pem -subj /CN=TPM_UI/O=Infineon/C=SG -out server_ecc.csr\n")
+        self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnGenCert(self, evt):
         self.text_server.AppendText("Creating Server Certificate...\n")
@@ -776,7 +757,7 @@ class Tab_ECC_CS(wx.Panel):
         server_proc = exec_cmd.createProcess(openssl_cmd, server_log)
         self.text_server.AppendText("openssl x509 -req -in server_ecc.csr -CA CA_ecc_cert.pem -CAkey ecc_CA_key.pem -out CAsigned_ecc_cert.crt -days 365 -sha256 -CAcreateserial \n")
         self.text_server.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
-            
+
     def OnStartServer(self,evt):
         if (self.server_proc is not None):
             self.Server_thread_active_flag=0
@@ -927,10 +908,10 @@ class Tab_RSA_MISC(wx.Panel):
     
     def OnGenKey(self):
         #self.command_out.AppendText(f"Current directory: {os.getcwd()}\n")
-        exec_cmd.execCLI(["rm", "rsa2.pem"])
-        exec_cmd.execCLI(["rm", "rsa2.pub.pem"])
-        exec_cmd.execCLI(["rm", "mycipher"])
-        exec_cmd.execCLI(["rm", "mysig"])
+        exec_cmd.execCLI(["rm", "-f", "rsa2.pem"])
+        exec_cmd.execCLI(["rm", "-f", "rsa2.pub.pem"])
+        exec_cmd.execCLI(["rm", "-f", "mycipher"])
+        exec_cmd.execCLI(["rm", "-f", "mysig"])
         owner_auth = exec_cmd.get_auth_from_config('owner')
         
         if (owner_auth != ""):
@@ -946,15 +927,15 @@ class Tab_RSA_MISC(wx.Panel):
 
             # Step 2: Create a primary key with ECC
             command_output = exec_cmd.execCLI([
-                "tpm2_createprimary", "-C", "o", "-P", owner_auth, "-g", "sha256", "-G", "ecc", "-c", "primary_sh.ctx"
+                "tpm2_createprimary", "-C", "o", "-P", owner_auth, "-g", "sha256", "-G", "ecc", "-c", "rsa_primary.ctx"
             ])
-            self.command_out.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G ecc -c primary_sh.ctx' executed \n")
+            self.command_out.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G ecc -c rsa_primary.ctx' executed \n")
 
             # Step 3: Evict control of the primary key
             command_output = exec_cmd.execCLI([
-                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "primary_sh.ctx", "0x81000008"
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "rsa_primary.ctx", "0x81000008"
             ])
-            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P {owner_auth} -c primary_sh.ctx 0x81000008' executed \n")
+            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P {owner_auth} -c rsa_primary.ctx 0x81000008' executed \n")
             # Step 4: Generate RSA key using TPM and parent key
             command_output = exec_cmd.execCLI([
                 "openssl", "genpkey", "-algorithm", "RSA", "-provider", "tpm2", "-pkeyopt", "bits:2048", "-pkeyopt", "parent:0x81000008", "-out", "rsa2.pem"
@@ -1085,11 +1066,11 @@ class Tab_RSA_MISC(wx.Panel):
         else:
             self.command_out.AppendText("Input data cannot be blank\n")
             return
-        data_file = open("input_data.txt", "w")
+        data_file = open("rsainput_data.txt", "w")
         data_file.write(input_data)
         data_file.close()
 
-        hash_cmd = "openssl dgst -sha256 -binary input_data.txt > input_data.hash"
+        hash_cmd = "openssl dgst -sha256 -binary rsainput_data.txt > rsainput_data.hash"
         self.command_out.AppendText(f"'{hash_cmd}' executed\n")
         ps1 = subprocess.Popen(hash_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         hash_output = ps1.stdout.read().decode(errors="ignore")
@@ -1098,7 +1079,7 @@ class Tab_RSA_MISC(wx.Panel):
             self.command_out.AppendText("Failed to generate hash:\n" + hash_output + "\n")
             return
                 
-        cmd ="openssl pkeyutl -provider tpm2 -provider default -pkeyopt rsa_padding_mode:pss -inkey rsa2.pem -sign -rawin -in input_data.hash -out mysig"
+        cmd ="openssl pkeyutl -provider tpm2 -provider default -pkeyopt rsa_padding_mode:pss -inkey rsa2.pem -sign -rawin -in rsainput_data.hash -out mysig"
         ps_command = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         command_output = ps_command.stdout.read()
         retcode = ps_command.wait()        
@@ -1114,11 +1095,11 @@ class Tab_RSA_MISC(wx.Panel):
         if(input_data==""):
             self.command_out.AppendText("Input data cannot be blank\n")
             return
-        data_file = open("input_data.txt", "w")
+        data_file = open("rsainput_data.txt", "w")
         data_file.write(input_data)
         data_file.close()
         
-        hash_cmd = "openssl dgst -sha256 -binary input_data.txt > input_data.hash"
+        hash_cmd = "openssl dgst -sha256 -binary rsainput_data.txt > rsainput_data.hash"
         ps1 = subprocess.Popen(hash_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         hash_output = ps1.stdout.read().decode(errors="ignore")
         retcode1 = ps1.wait()
@@ -1126,16 +1107,245 @@ class Tab_RSA_MISC(wx.Panel):
         command_output = exec_cmd.execCLI([
             "openssl", "pkeyutl",
             "-pkeyopt", "pad-mode:pss",
+            "-provider", "tpm2", "-provider", "default",
             "-digest", "sha256",
             "-pubin", "-inkey", "rsa2.pub.pem", 
             "-verify", "-rawin",
-            "-in", "input_data.hash",
+            "-in", "rsainput_data.hash",
             "-sigfile", "mysig",
         ])
         
         self.command_out.AppendText(str(command_output))
         self.command_out.AppendText(f"'{hash_cmd}' executed \n")
-        self.command_out.AppendText("'openssl pkeyutl -pubin -inkey rsa2.pub -verify -in input_data.hash -sigfile mysig' executed \n")
+        self.command_out.AppendText("'openssl pkeyutl -pkeyopt pad-mode:pss -provider tpm2 -provider default -digest sha256 -pubin -inkey rsa2.pub -verify -rawin -in rsainput_data.hash -sigfile mysig' executed \n")
+        self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+
+    def OnClear(self, evt):
+        self.command_out.Clear()
+
+    # Calling parent of the parent, as direct parent is the notebook,
+    # then the second parent is the frame, from which we call the destruction
+    def OnBack(self, evt):
+        self.Parent.Parent.OnCloseWindow(None)
+        
+class Tab_ECC_MISC(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        # declare the sizers
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        input_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        datainput_blurb_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        # instantiate the objects
+        self.data_input = wx.TextCtrl(self, -1)
+        data_input_blurb = wx.StaticText(self, -1, "Data Input: ")
+        self.command_out = wx.TextCtrl(self, -1, style=(wx.TE_MULTILINE | wx.TE_READONLY), size=(500, 500))
+        self.command_out.SetFont(wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        button_gen_rsakey = wx.Button(self, -1, 'Generate ECC Keypair', size = (-1, 47))
+        button_rsa_sign = wx.Button(self, -1, 'ECC Signing', size = (-1, 47))
+        button_rsa_verify = wx.Button(self, -1, 'ECC Verification', size = (-1, 47))
+        clearimage = wx.Image('../images/clear.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        clearbutton = wx.BitmapButton(self, -1, clearimage)
+        # ~clearbutton = wx.BitmapButton(self, -1, img.clear.getBitmap())
+        
+        backimage = wx.Image('../images/back.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        backbutton = wx.BitmapButton(self, -1, backimage)
+        # ~backbutton = wx.BitmapButton(self, -1, img.back.getBitmap())
+
+        # attach the ui elements to the main sizer
+        mainsizer.AddSpacer(5)
+        mainsizer.Add(input_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        mainsizer.Add(button_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        mainsizer.Add(self.command_out, 1, wx.EXPAND | wx.TOP, 5)
+        
+        datainput_blurb_sizer.Add(data_input_blurb, 1, wx.EXPAND | wx.CENTER | wx.LEFT, 10)
+        input_sizer.Add(datainput_blurb_sizer, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        input_sizer.Add(self.data_input, 8, wx.EXPAND | wx.ALL, 5)
+        
+        button_sizer.Add(button_gen_rsakey, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        button_sizer.Add(button_rsa_sign, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        button_sizer.Add(button_rsa_verify, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        button_sizer.Add(clearbutton, 0, wx.ALL, 5)
+        button_sizer.Add(backbutton, 0, wx.ALL, 5)
+
+        # Set tooltips
+        button_gen_rsakey.SetToolTip(wx.ToolTip("Generate a ECC key pair."))
+        button_rsa_sign.SetToolTip(wx.ToolTip("Sign the data input with the private key"))
+        button_rsa_verify.SetToolTip(wx.ToolTip("Verify the signature with the public key"))
+        clearbutton.SetToolTip(wx.ToolTip("Clear all textboxes."))
+
+        # declare and bind events
+        self.Bind(wx.EVT_BUTTON, self.OnClear, clearbutton)
+        self.Bind(wx.EVT_BUTTON, self.OnGenKey1, button_gen_rsakey)
+        self.Bind(wx.EVT_BUTTON, self.OnSign1, button_rsa_sign)
+        self.Bind(wx.EVT_BUTTON, self.OnVerify, button_rsa_verify)
+        self.Bind(wx.EVT_BUTTON, self.OnBack, backbutton)
+
+        self.data_input.write("Hello World")
+        self.SetSizer(mainsizer)
+
+    def OnGenKey1(self, evt):
+        self.command_out.write("Setting up TPM...\n")
+        wx.CallLater(10, self.OnGenKey)
+    
+    def OnGenKey(self):
+        #self.command_out.AppendText(f"Current directory: {os.getcwd()}\n")
+        exec_cmd.execCLI(["rm", "-f", "ecc2.pem"])
+        exec_cmd.execCLI(["rm", "-f", "ecc2.pub.pem"])
+        exec_cmd.execCLI(["rm", "-f", "mycipher"])
+        exec_cmd.execCLI(["rm", "-f", "mysig"])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        
+        if (owner_auth != ""):
+            # Step 1: Evict control of the handle 0x81000009
+            handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+            if "0x81000009" in handles_output:
+                command_output = exec_cmd.execCLI([
+                    "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000009"
+            ])
+                self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000009' executed \n")
+            else:
+                self.command_out.AppendText("Handle 0x81000009 not found, skipping evictcontrol.\n")
+
+            # Step 2: Create a primary key with ECC
+            command_output = exec_cmd.execCLI([
+                "tpm2_createprimary", "-C", "o", "-P", owner_auth, "-g", "sha256", "-G", "ecc", "-c", "ecc_primary.ctx"
+            ])
+            self.command_out.AppendText(f"'tpm2_createprimary -C o -P {owner_auth} -g sha256 -G ecc -c ecc_primary.ctx' executed \n")
+
+            # Step 3: Evict control of the primary key
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "ecc_primary.ctx", "0x81000009"
+            ])
+            
+            self.command_out.AppendText(f"'tpm2_evictcontrol -C o -P {owner_auth} -c ecc_primary.ctx 0x81000009' executed \n")
+            # Step 4: Generate ECC key using TPM and parent key
+            command_output = exec_cmd.execCLI([
+                "openssl", "genpkey", "-algorithm", "EC", "-provider", "tpm2", "-pkeyopt", "parent:0x81000009", "-pkeyopt", "ec_paramgen_curve:P-384", "-out", "ecc2.pem"
+            ])
+            self.command_out.AppendText(str(command_output))
+            self.command_out.AppendText(f"'openssl genpkey -algorithm EC -provider tpm2 -pkeyopt parent:0x81000009 -pkeyopt ec_paramgen_curve:P-384 -out ecc2.pem' executed \n")
+            """
+            # Step 4: Generate child ECC key with owner auth value
+            command_output = exec_cmd.execCLI([
+                "openssl", "genpkey", "-algorithm", "EC", "-provider", "tpm2",  "-pkeyopt", "parent:0x81000009","-pkeyopt", "bits:2048", "-pkeyopt", f"user-auth:{owner_auth}", "-out", "ecc2.pem"
+            ])
+            self.command_out.AppendText(str(command_output))
+            self.command_out.AppendText(f"'openssl genpkey -algorithm EC -provider tpm2 -pkeyopt bits:2048 -pkeyopt user-auth:{owner_auth} -out ecc2.pem' executed \n")
+            
+            # Step 5: Extract public key from the generated RSA key
+            command_output = exec_cmd.execCLI([
+                "openssl", "pkey", "-provider", "tpm2", "-provider", "default", "-passin", f"pass:{owner_auth}", "-in", "ecc2.pem", "-pubout", "-out", "ecc2.pub.pem"
+            ])
+            self.command_out.AppendText(str(command_output))
+            self.command_out.AppendText(f"'openssl pkey -provider tpm2 -provider default -passin pass:{owner_auth} -in ecc2.pem -pubout -out ecc2.pub.pem' executed \n")
+            """
+
+            # Step 5: Extract public key from the generated RSA key
+            command_output = exec_cmd.execCLI([
+                "openssl", "pkey", "-provider", "tpm2", "-provider", "default", "-in", "ecc2.pem", "-pubout", "-out", "ecc2.pub.pem"
+            ])
+            self.command_out.AppendText(str(command_output))
+            self.command_out.AppendText(f"'openssl pkey -provider tpm2 -provider default -in ecc2.pem -pubout -out ecc2.pub.pem' executed \n")
+
+            # Step 6: Read and display the content of ecc2.pub.pem
+            command_output = exec_cmd.execCLI([
+                "openssl", "pkey", "-pubin", "-text", "-in", "ecc2.pub.pem"
+            ])
+            self.command_out.AppendText("ecc2.pub.pem contains: \n")
+            with open("ecc2.pub.pem", 'r') as filehandle:
+                self.command_out.AppendText(filehandle.read() + "\n")
+            self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+
+            
+        else:
+            command_output = exec_cmd.execCLI([
+                "openssl", "genpkey",
+                "-provider", "tpm2",
+                "-algorithm", "EC",
+                "-pkeyopt", "ec_paramgen_curve:P-384",
+                "-out", "ecc2.pem"
+            ])
+            self.command_out.AppendText(str(command_output))
+            self.command_out.AppendText(f"'openssl genpkey -provider tpm2 -algorithm EC -pkeyopt ec_paramgen_curve:P-384 -out ecc2.pem' executed \n")
+            command_output = exec_cmd.execCLI([
+                "openssl", "pkey",
+                "-provider", "tpm2",
+                "-provider", "default",
+                "-in", "ecc2.pem",
+                "-pubout",
+                "-out", "ecc2.pub.pem",
+            ])
+            self.command_out.AppendText("'openssl pkey -provider tpm2 -provider default -in ecc2.pem -pubout -out ecc2.pub.pem' executed \n")
+            
+            #read the ecc2.pub.pem
+            self.command_out.AppendText("ecc2.pem contains: \n")
+            with open("ecc2.pem", 'r') as filehandle:
+                self.command_out.AppendText(filehandle.read() + "\n")
+            self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+
+    def OnSign1(self, evt):
+        self.command_out.write("Signing Data Input with Private Key...\n")
+        wx.CallLater(10, self.OnSign)
+
+    def OnSign(self):
+        if (self.data_input.GetValue()):
+            input_data = self.data_input.GetValue()
+        else:
+            self.command_out.AppendText("Input data cannot be blank\n")
+            return
+        data_file = open("eccinput_data.txt", "w")
+        data_file.write(input_data)
+        data_file.close()
+
+        hash_cmd = "openssl dgst -sha256 -binary eccinput_data.txt > eccinput_data.hash"
+        self.command_out.AppendText(f"'{hash_cmd}' executed\n")
+        ps1 = subprocess.Popen(hash_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        hash_output = ps1.stdout.read().decode(errors="ignore")
+        retcode1 = ps1.wait()
+        if retcode1 != 0:
+            self.command_out.AppendText("Failed to generate hash:\n" + hash_output + "\n")
+            return
+                
+        cmd ="openssl pkeyutl -provider tpm2 -provider default -inkey ecc2.pem -sign -rawin -in eccinput_data.hash -out mysig"
+        ps_command = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        command_output = ps_command.stdout.read()
+        retcode = ps_command.wait()        
+
+        self.command_out.AppendText(cmd +" executed \n")
+        self.command_out.AppendText("mysig contains: \n")
+        command_output = exec_cmd.execCLI(["xxd", "mysig", ])
+        self.command_out.AppendText(command_output + "\n")
+        self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+            
+    def OnVerify(self, evt):
+        input_data = self.data_input.GetValue()
+        if(input_data==""):
+            self.command_out.AppendText("Input data cannot be blank\n")
+            return
+        data_file = open("eccinput_data.txt", "w")
+        data_file.write(input_data)
+        data_file.close()
+        
+        hash_cmd = "openssl dgst -sha256 -binary eccinput_data.txt > eccinput_data.hash"
+        ps1 = subprocess.Popen(hash_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        hash_output = ps1.stdout.read().decode(errors="ignore")
+        retcode1 = ps1.wait()
+                
+        command_output = exec_cmd.execCLI([
+            "openssl", "pkeyutl",
+            "-provider", "tpm2", "-provider", "default",
+            "-pubin", "-inkey", "ecc2.pub.pem", 
+            "-verify", "-rawin",
+            "-in", "eccinput_data.hash",
+            "-sigfile", "mysig",
+        ])
+        
+        self.command_out.AppendText(str(command_output))
+        self.command_out.AppendText(f"'{hash_cmd}' executed \n")
+        self.command_out.AppendText("'openssl pkeyutl -provider tpm2 -provider default -pubin -inkey ecc2.pub.pem -verify -rawin -in eccinput_data.hash -sigfile mysig' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnClear(self, evt):
@@ -1258,13 +1468,15 @@ class Tab3Frame(wx.Frame):
         self.tab1_rsa_cs = Tab_RSA_CS(tab_base)
         self.tab2_ecc_cs = Tab_ECC_CS(tab_base)
         tab3_rsa_misc = Tab_RSA_MISC(tab_base)
-        tab4_rng = Tab_RNG(tab_base)
+        tab4_ecc_misc = Tab_ECC_MISC(tab_base)
+        tab5_rng = Tab_RNG(tab_base)
 
         # Add tabs
         tab_base.AddPage(self.tab1_rsa_cs, 'RSA (Client/Server)')
         tab_base.AddPage(self.tab2_ecc_cs, 'ECC (Client/Server)')
         tab_base.AddPage(tab3_rsa_misc, 'RSA (Enc/Dec/Sign/Verify)')
-        tab_base.AddPage(tab4_rng, 'RNG')
+        tab_base.AddPage(tab4_ecc_misc, 'ECC (Sign/Verify)')
+        tab_base.AddPage(tab5_rng, 'RNG')
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
         self.Show(True)
