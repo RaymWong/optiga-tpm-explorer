@@ -1,1 +1,1 @@
-/home/css/optiga-tpm-explorer/Python_TPM20_GUI/bin/start_gui.sh
+/home/raymond/codes/optiga-tpm-explorer/Python_TPM20_GUI/bin/start_gui.sh
