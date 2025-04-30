@@ -71,7 +71,7 @@ class OwnerDlg(wx.Dialog):
         # set defaults
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_ok)
-        self.ownerAuth_input.WriteText(exec_cmd.ownerAuth)
+        self.ownerAuth_input.WriteText(exec_cmd.get_auth_from_config('owner'))
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
         self.Centre(wx.BOTH)
@@ -206,18 +206,18 @@ class CredentialDlg(wx.Dialog):
     def OnClearOwnerAuth(self, evt):
         user_owner = self.ownerAuth_input.GetValue()
         exec_cmd.ownerAuth = user_owner.replace(" ", "")
-
         if (exec_cmd.ownerAuth != ""):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_changeauth",
                 "-c","o",
                 "-p", exec_cmd.ownerAuth,
             ])
-            exec_cmd.ownerAuth = ""
-            exec_cmd.save_auth_values()
             self.parent.text_display.AppendText(str(command_output))
             self.parent.text_display.AppendText("'tpm2_changeauth -c o -p " + exec_cmd.ownerAuth + "' executed \n")
             self.parent.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+            if "ERROR" not in command_output: 
+                exec_cmd.ownerAuth = ""
+                exec_cmd.save_partial_auth(ownerAuth="", endorseAuth=None, lockoutAuth=None, nvAuth=None)
             
     def OnClearEndorseAuth(self, evt):
         user_endorse = self.endorseAuth_input.GetValue()
@@ -228,11 +228,12 @@ class CredentialDlg(wx.Dialog):
                 "-c", "e",
                 "-p", exec_cmd.endorseAuth,
             ])
-            exec_cmd.endorseAuth = ""
-            exec_cmd.save_auth_values()
             self.parent.text_display.AppendText(str(command_output))
             self.parent.text_display.AppendText("'tpm2_changeauth -c e -p " + exec_cmd.endorseAuth + "' executed \n")
             self.parent.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+            if "ERROR" not in command_output: 
+                exec_cmd.endorseAuth = ""
+                exec_cmd.save_partial_auth(ownerAuth=None, endorseAuth="", lockoutAuth=None, nvAuth=None)
 
     def OnClearLockoutAuth(self, evt):
         user_lockout = self.lockoutAuth_input.GetValue()
@@ -243,11 +244,12 @@ class CredentialDlg(wx.Dialog):
                 "-c", "l",
                 "-p", exec_cmd.lockoutAuth,
             ])
-            exec_cmd.lockoutAuth = ""
-            exec_cmd.save_auth_values()
             self.parent.text_display.AppendText(str(command_output))
             self.parent.text_display.AppendText("'tpm2_changeauth -c l -p " + exec_cmd.lockoutAuth + "' executed \n")
             self.parent.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+            if "ERROR" not in command_output: 
+                exec_cmd.lockoutAuth = ""
+                exec_cmd.save_partial_auth(ownerAuth=None, endorseAuth=None, lockoutAuth="", nvAuth=None)
 
     def OnCloseWindow(self, evt):
         self.EndModal(-1)
@@ -260,7 +262,6 @@ class CredentialDlg(wx.Dialog):
         exec_cmd.ownerAuth = user_owner.replace(" ", "")
         exec_cmd.endorseAuth = user_endorse.replace(" ", "")
         exec_cmd.lockoutAuth = user_lockout.replace(" ", "")
-        exec_cmd.save_auth_values()
         self.EndModal(1)
         self.Destroy()
 

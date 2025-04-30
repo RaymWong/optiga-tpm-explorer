@@ -141,8 +141,6 @@ class Tab4Frame(wx.Frame):
         wx.CallLater(10, self.OnNewPrimary)
     
     def OnNewPrimary(self):
-        if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
-            return
         owner_auth = exec_cmd.get_auth_from_config('owner')
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",

@@ -166,3 +166,32 @@ def save_auth_values():
             json.dump(values, f, indent=2)
     except Exception as e:
         print(f"Error saving auth values: {e}")
+        
+def save_partial_auth(ownerAuth=None, endorseAuth=None, lockoutAuth=None, nvAuth=None):
+    # Load existing values from the JSON file if it exists
+    try:
+        with open('tpm_auth.json', 'r') as f:
+            values = json.load(f)
+    except FileNotFoundError:
+        # If config doesn't exist, clear TPM and create empty config
+        execTpmToolsAndCheck(["tpm2_clear", "-c", "p"])
+        ownerAuth = endorseAuth = lockoutAuth = nvAuth = ""
+        save_auth_values()
+        return ''
+
+    # Update values only if a new value is provided
+    if ownerAuth is not None:
+        values['ownerAuth'] = ownerAuth
+    if endorseAuth is not None:
+        values['endorseAuth'] = endorseAuth
+    if lockoutAuth is not None:
+        values['lockoutAuth'] = lockoutAuth
+    if nvAuth is not None:
+        values['nvAuth'] = nvAuth
+
+    # Save updated values back to the JSON file
+    try:
+        with open('tpm_auth.json', 'w') as f:
+            json.dump(values, f, indent=2)
+    except Exception as e:
+        print(f"Error saving auth values: {e}")
