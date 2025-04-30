@@ -109,6 +109,7 @@ class Tab_Setup(wx.Panel):
     def OnChangeAuth(self, evt):
         if (misc.CredentialDlg(self, "Enter in the credentials").ShowModal() == -1):
             return
+            
         if (exec_cmd.ownerAuth != ""):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_changeauth",
@@ -116,6 +117,8 @@ class Tab_Setup(wx.Panel):
             ])
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("'tpm2_changeauth -c owner " + exec_cmd.ownerAuth + "' executed \n")
+            if "ERROR" not in command_output:  # Check for errors in the command output
+                    exec_cmd.save_partial_auth(ownerAuth=exec_cmd.ownerAuth, endorseAuth=None, lockoutAuth=None, nvAuth=None)
         if (exec_cmd.endorseAuth != ""):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_changeauth",
@@ -123,6 +126,8 @@ class Tab_Setup(wx.Panel):
             ])
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("'tpm2_changeauth -c endorsement " + exec_cmd.endorseAuth + "' executed \n")
+            if "ERROR" not in command_output:  # Check for errors in the command output
+                    exec_cmd.save_partial_auth(ownerAuth=None, endorseAuth=exec_cmd.endorseAuth, lockoutAuth=None, nvAuth=None)
         if (exec_cmd.lockoutAuth != ""):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_changeauth",
@@ -131,7 +136,9 @@ class Tab_Setup(wx.Panel):
         
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("'tpm2_changeauth -c lockout " + exec_cmd.lockoutAuth + "' executed \n")
-        exec_cmd.save_auth_values()
+            if "ERROR" not in command_output:  # Check for errors in the command output
+                    exec_cmd.save_partial_auth(ownerAuth=None, endorseAuth=None, lockoutAuth=exec_cmd.lockoutAuth, nvAuth=None)
+
         self.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
         #~ f = open("values.txt", "w+")
         #~ f.write('ownerAuth = "')
@@ -583,6 +590,9 @@ class Tab_NVM(wx.Panel):
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
         self.Show(True)
+        
+    def OnRefreshOwnerAuth(self):
+        self.owner_input.SetValue(exec_cmd.get_auth_from_config('owner'))
  
     def OnClickFileName(self, evt):
         frame = wx.Frame(None, -1, '*.*')
@@ -739,7 +749,7 @@ class Tab_NVM(wx.Panel):
         self.right_txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnResetAttr(self, evt):
-        self.nvm_attr.SetCheckedStrings(["authread", "authwrite", "ownerwrite", "ownerread"])
+        self.nvm_attr.SetCheckedStrings(["authread", "authwrite", "ownerwrite", "ownerread", "read_stclear"])
 
     def OnClear(self, evt):
         self.right_txt_display.Clear()
@@ -1149,9 +1159,11 @@ class Tab1Frame(wx.Frame):
 
         # Instantiate all objects
         tab_base = wx.Notebook(self, id=wx.ID_ANY, style=wx.NB_TOP)
+        tab_base.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnTabChanged)
         tab1_setup = Tab_Setup(tab_base)
         tab2_pcr = Tab_PCR(tab_base)
         tab3_nvm = Tab_NVM(tab_base)
+        self.tab3_nvm = tab3_nvm
         tab4_context = Tab_Handles(tab_base)
 
         # Add tabs
@@ -1161,6 +1173,12 @@ class Tab1Frame(wx.Frame):
         tab_base.AddPage(tab4_context, 'Handle Management')
 
         self.Show(True)
+        
+    def OnTabChanged(self, event):
+        selected = event.GetSelection()
+        if selected == 2:  
+                self.tab3_nvm.OnRefreshOwnerAuth()
+        event.Skip() 
 
     def OnCloseWindow(self, evt):
         self.Parent.Show()
