@@ -719,7 +719,7 @@ class Tab_ECC_CS(wx.Panel):
             "tpm2_evictcontrol", "-C", "o", "-c", "ECprimary.ctx",
             "-P", owner_auth, "0x8100000B"
         ])
-        self.text_server.AppendText(f"'tpm2_evictcontrol -C o -c ECCprimary.ctx -P {owner_auth} 0x8100000B' executed \n")
+        self.text_server.AppendText(f"'tpm2_evictcontrol -C o -c ECprimary.ctx -P {owner_auth} 0x8100000B' executed \n")
         
         exec_cmd.execCLI([
             "openssl", "genpkey",
