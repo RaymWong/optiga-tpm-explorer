@@ -166,8 +166,8 @@ class Tab_RSA(wx.Panel):
         clearbutton.SetToolTip(wx.ToolTip("Clear all textboxes."))
 
         # bind events
-        self.Bind(wx.EVT_BUTTON, self.OnCreatePrimary2, createprimary)
-        self.Bind(wx.EVT_BUTTON, self.OnCreateKeyPair2, createkeypairbutton)
+        self.Bind(wx.EVT_BUTTON, self.OnCreatePrimary1, createprimary)
+        self.Bind(wx.EVT_BUTTON, self.OnCreateKeyPair1, createkeypairbutton)
         self.Bind(wx.EVT_BUTTON, self.OnEnc, encbutton)
         self.Bind(wx.EVT_BUTTON, self.OnDec, decbutton)
         self.Bind(wx.EVT_BUTTON, self.OnSign1, signbutton)
@@ -176,23 +176,29 @@ class Tab_RSA(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.OnClear, clearbutton)
         self.Bind(wx.EVT_BUTTON, self.OnBack, backbutton)
         self.SetSizer(mainsizer)
-
-    def OnCreatePrimary2(self, evt):
-        if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
-            return
-        self.OnCreatePrimary1()
     
-    def OnCreatePrimary1(self):
+    def OnCreatePrimary1(self, evt):
         self.command_display.AppendText("Creating RSA Primary Key (may take a while)...\n")
         wx.CallLater(150, self.OnCreatePrimary)
     
     # note: this function/command runs for quite a while as compared to ECC.
     def OnCreatePrimary(self):
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAprimary.ctx"])
+        
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        if "0x81000004" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000004"
+        ])
+            self.primaryevict = True
+        else:
+            self.primaryevict = False
+            
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
             "-C", "o",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "-g", "sha256",
             "-G", "rsa",
             "-c", "RSAprimary.ctx"
@@ -203,20 +209,17 @@ class Tab_RSA(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "RSAprimary.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000004",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        self.command_display.AppendText("tpm2_createprimary -C o -P " + exec_cmd.ownerAuth + " -g sha256 -G rsa -c RSAprimary.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -C o -c RSAprimary.ctx -P " + exec_cmd.ownerAuth + " 0x81000004\n")
+        if self.primaryevict == True:
+            self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000004 \n")
+        self.command_display.AppendText("tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G rsa -c RSAprimary.ctx\n")
+        self.command_display.AppendText("tpm2_evictcontrol -C o -c RSAprimary.ctx -P " + owner_auth + " 0x81000004\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
-
-    def OnCreateKeyPair2(self, evt):
-        if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
-            return
-        self.OnCreateKeyPair1()
     
-    def OnCreateKeyPair1(self):
+    def OnCreateKeyPair1(self, evt):
         self.command_display.AppendText("Creating RSA Key Pair... \n")
         wx.CallLater(150, self.OnCreateKeyPair)
     
@@ -225,6 +228,16 @@ class Tab_RSA(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAPriv.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAPub.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAkey_name_structure.data"])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        self.childevict = False
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        if self.primaryevict == True and "0x81000005" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000005"
+        ])
+            self.primaryevict = False
+            self.childkeyevict = True
+            
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_create",
             "-C", "0x81000004",
@@ -246,17 +259,27 @@ class Tab_RSA(wx.Panel):
         ])
         self.command_display.AppendText(str(output_message))
         self.Update()
+        
+        if "0x81000005" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000005"
+        ])
+            self.childevict = True
+            
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "RSAkeycontext.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000005",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
+        if self.childevict == True:
+            self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000005 \n")
+            self.childevict = False
         self.command_display.AppendText("tpm2_create -C 0x81000004 -g sha256 -G rsa -r RSAPriv.key -u RSAPub.key\n")
         self.command_display.AppendText("tpm2_load -C 0x81000004 -u RSAPub.key -r RSAPriv.key -n RSAkey_name_structure.data -c RSAkeycontext.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -a o -c RSAkeycontext.ctx -p 0x81000005 -P " + exec_cmd.ownerAuth + "\n")
+        self.command_display.AppendText("tpm2_evictcontrol -a o -c RSAkeycontext.ctx -p 0x81000005 -P " + owner_auth + "\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnEnc(self, evt):
@@ -520,30 +543,36 @@ class Tab_ECC(wx.Panel):
         clearbutton.SetToolTip(wx.ToolTip("Clear all textboxes."))
 
         # bind events
-        self.Bind(wx.EVT_BUTTON, self.OnCreatePrimary2, createprimary)
-        self.Bind(wx.EVT_BUTTON, self.OnCreateKeyPair2, createkeypairbutton)
+        self.Bind(wx.EVT_BUTTON, self.OnCreatePrimary1, createprimary)
+        self.Bind(wx.EVT_BUTTON, self.OnCreateKeyPair1, createkeypairbutton)
         self.Bind(wx.EVT_BUTTON, self.OnSign1, signbutton)
         self.Bind(wx.EVT_BUTTON, self.OnVerifySSL1, opensslverifybutton)
         self.Bind(wx.EVT_BUTTON, self.OnVerifyTPM1, tpmverifybutton)
         self.Bind(wx.EVT_BUTTON, self.OnClear, clearbutton)
         self.Bind(wx.EVT_BUTTON, self.OnBack, backbutton)
         self.SetSizer(mainsizer)
-
-    def OnCreatePrimary2(self, evt):
-        if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
-            return
-        self.OnCreatePrimary1()
     
-    def OnCreatePrimary1(self):
+    def OnCreatePrimary1(self, evt):
         self.command_display.AppendText("Creating ECC Primary Key... \n")
         wx.CallLater(150, self.OnCreatePrimary)
     
     def OnCreatePrimary(self):
+        owner_auth = exec_cmd.get_auth_from_config('owner')
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCprimary.ctx"])
+        
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        if "0x81000006" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000006"
+        ])
+            self.primaryevict = True
+        else:
+            self.primaryevict = False
+            
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
             "-C", "o",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "-g", "sha256",
             "-G", "ecc",
             "-c", "ECCprimary.ctx"
@@ -555,20 +584,17 @@ class Tab_ECC(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "ECCprimary.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000006"
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        self.command_display.AppendText("tpm2_createprimary -C o -P " + exec_cmd.ownerAuth + " -g sha256 -G 0x0023 -c ECCprimary.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCprimary.ctx -p 0x81000006 -P " + exec_cmd.ownerAuth + "\n")
+        if self.primaryevict == True:
+            self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000006 \n")
+        self.command_display.AppendText("tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G 0x0023 -c ECCprimary.ctx\n")
+        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCprimary.ctx -p 0x81000006 -P " + owner_auth + "\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
-
-    def OnCreateKeyPair2(self, evt):
-        if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
-            return
-        self.OnCreateKeyPair1()
     
-    def OnCreateKeyPair1(self):
+    def OnCreateKeyPair1(self, evt):
         self.command_display.AppendText("Creating ECC Key Pair... \n")
         wx.CallLater(150, self.OnCreateKeyPair)
     
@@ -577,6 +603,16 @@ class Tab_ECC(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCpri.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCpub.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCname.data"])
+        owner_auth = exec_cmd.get_auth_from_config('owner')
+        self.childevict = False
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        if self.primaryevict == True and "0x81000007" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000007"
+        ])
+            self.primaryevict = False
+            self.childkeyevict = True
+            
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_create",
             "-C", "0x81000006",
@@ -598,17 +634,27 @@ class Tab_ECC(wx.Panel):
         ])
         self.command_display.AppendText(str(output_message))
         self.Update()
+        
+        if "0x81000007" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000007"
+        ])
+            self.childevict = True
+            
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", "ECCkeycontext.ctx",
-            "-P", exec_cmd.ownerAuth,
+            "-P", owner_auth,
             "0x81000007",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
+        if self.childevict == True:
+            self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000007 \n")
+            self.childevict = False
         self.command_display.AppendText("tpm2_create -C 0x81000006 -p ECCleaf123 -g sha256 -G ecc -r ECCpri.key -u ECCpub.key\n")
         self.command_display.AppendText("tpm2_load -C 0x81000006 -u ECCpub.key -r ECCpri.key -n ECCname.data -c ECCkeycontext.ctx\n")
-        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCkeycontext.ctx -P " + exec_cmd.ownerAuth + " 0x81000007\n")
+        self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCkeycontext.ctx -P " + owner_auth + " 0x81000007\n")
         self.command_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnSign1(self, evt):

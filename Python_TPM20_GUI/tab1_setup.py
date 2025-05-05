@@ -5,7 +5,8 @@ import info_dialogs as info
 import images as img
 import binascii
 import subprocess
-#~ import os
+import os
+import json
 from subprocess import PIPE
 # the tpm has 24 banks
 pcr_index_list = [str(value) for value in range(0, 24)]
@@ -108,6 +109,7 @@ class Tab_Setup(wx.Panel):
     def OnChangeAuth(self, evt):
         if (misc.CredentialDlg(self, "Enter in the credentials").ShowModal() == -1):
             return
+            
         if (exec_cmd.ownerAuth != ""):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_changeauth",
@@ -115,6 +117,8 @@ class Tab_Setup(wx.Panel):
             ])
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("'tpm2_changeauth -c owner " + exec_cmd.ownerAuth + "' executed \n")
+            if "ERROR" not in command_output:  # Check for errors in the command output
+                    exec_cmd.save_partial_auth(ownerAuth=exec_cmd.ownerAuth, endorseAuth=None, lockoutAuth=None, nvAuth=None)
         if (exec_cmd.endorseAuth != ""):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_changeauth",
@@ -122,6 +126,8 @@ class Tab_Setup(wx.Panel):
             ])
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("'tpm2_changeauth -c endorsement " + exec_cmd.endorseAuth + "' executed \n")
+            if "ERROR" not in command_output:  # Check for errors in the command output
+                    exec_cmd.save_partial_auth(ownerAuth=None, endorseAuth=exec_cmd.endorseAuth, lockoutAuth=None, nvAuth=None)
         if (exec_cmd.lockoutAuth != ""):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_changeauth",
@@ -130,6 +136,9 @@ class Tab_Setup(wx.Panel):
         
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("'tpm2_changeauth -c lockout " + exec_cmd.lockoutAuth + "' executed \n")
+            if "ERROR" not in command_output:  # Check for errors in the command output
+                    exec_cmd.save_partial_auth(ownerAuth=None, endorseAuth=None, lockoutAuth=exec_cmd.lockoutAuth, nvAuth=None)
+
         self.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
         #~ f = open("values.txt", "w+")
         #~ f.write('ownerAuth = "')
@@ -160,7 +169,10 @@ class Tab_Setup(wx.Panel):
             "-c","p"
         ])
         exec_cmd.createProcess("sudo rm *.tss", None)
-
+        exec_cmd.ownerAuth = ""
+        exec_cmd.endorseAuth = ""
+        exec_cmd.lockoutAuth = ""
+        exec_cmd.save_auth_values()
 
         self.text_display.AppendText(str(command_output))
         self.text_display.AppendText("'tpm2_clear -c p' executed \n")
@@ -168,14 +180,15 @@ class Tab_Setup(wx.Panel):
 
     # this locks the clear command (above this), i.e. the user cannot platform clear
     def OnEnableLock(self, evt):
+        lockout_auth = exec_cmd.get_auth_from_config('lockout')
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_clearcontrol",
-            "-C", "l", "s", "-P", exec_cmd.lockoutAuth,
+            "-C", "l", "s", "-P", lockout_auth,
         ])
         self.text_display.AppendText(str(command_output))
         #self.text_display.AppendText(str(command_output))
         
-        self.text_display.AppendText("'tpm2_clearcontrol -C l s -P " + exec_cmd.lockoutAuth + "' executed \n")
+        self.text_display.AppendText("'tpm2_clearcontrol -C l s -P " + lockout_auth + "' executed \n")
         self.text_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnDisableLock(self, evt):
@@ -190,13 +203,14 @@ class Tab_Setup(wx.Panel):
     def OnDictAtk(self, evt):
         if (misc.DictAttackDlg(self, "Enter in the Values.").ShowModal() == -1):
             return
+        lockout_auth = exec_cmd.get_auth_from_config('lockout')
         if ((tpm2_max_auth_fail, tpm2_lockout_interval, tpm2_lockout_recovery) != (None, None, None)):
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_dictionarylockout", "-s",
                 "-n", tpm2_max_auth_fail,
                 "-t", tpm2_lockout_interval,
                 "-l", tpm2_lockout_recovery,
-                "-p", exec_cmd.lockoutAuth,
+                "-p", lockout_auth,
             ])
             self.text_display.AppendText(str(command_output))
             self.text_display.AppendText("tpm2_dictionarylockout executed \n")
@@ -570,12 +584,15 @@ class Tab_NVM(wx.Panel):
         self.nvm_offset.write("0")
         self.read_amt.write("32")
         self.nvm_data.write("Hello World!")
-        self.owner_input.write(exec_cmd.ownerAuth)
-        self.nv_auth_input.write(exec_cmd.nvAuth)
-        self.nvm_attr.SetCheckedStrings(["authread", "authwrite", "read_stclear"])
+        self.owner_input.write(exec_cmd.get_auth_from_config('owner'))
+        self.nv_auth_input.write(exec_cmd.get_auth_from_config('nv'))
+        self.nvm_attr.SetCheckedStrings(["ownerwrite", "ownerread", "authread", "authwrite", "read_stclear"])
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
         self.Show(True)
+        
+    def OnRefreshOwnerAuth(self):
+        self.owner_input.SetValue(exec_cmd.get_auth_from_config('owner'))
  
     def OnClickFileName(self, evt):
         frame = wx.Frame(None, -1, '*.*')
@@ -732,7 +749,7 @@ class Tab_NVM(wx.Panel):
         self.right_txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnResetAttr(self, evt):
-        self.nvm_attr.SetCheckedStrings(["authread", "authwrite"])
+        self.nvm_attr.SetCheckedStrings(["authread", "authwrite", "ownerwrite", "ownerread", "read_stclear"])
 
     def OnClear(self, evt):
         self.right_txt_display.Clear()
@@ -746,6 +763,7 @@ class Tab_NVM(wx.Panel):
         nvm_size = self.nvm_size.GetValue()
         temp_attr = []
         nvm_attr = ""
+        filename = 'tpm_auth.json'
         try:
             int(nvm_size)
         except ValueError:
@@ -759,9 +777,9 @@ class Tab_NVM(wx.Panel):
             return
         nvm_attr = "|".join(temp_attr)
         self.right_txt_display.AppendText("Attributes are: " + nvm_attr + "\n")
-        if (self.owner_input.GetValue()=="" and self.nv_auth_input.GetValue()==""):
-            self.right_txt_display.AppendText("Owner Authorisation and NV Authorisation Empty. Input Again.\n")
-            return
+        #if (self.owner_input.GetValue()==""):
+            #self.right_txt_display.AppendText("Owner Authorisation Empty. Input Again.\n")
+            #return
         
         #if NV field is empty
         if (nv_auth_val==""):
@@ -785,6 +803,33 @@ class Tab_NVM(wx.Panel):
                 "-P", owner_val,
                 "-p", nv_auth_val,
             ])
+            
+        #Update nvAuth in tpm_auth
+        filename = 'tpm_auth.json'
+        default_values = {
+        "ownerAuth": "",
+        "endorseAuth": "",
+        "lockoutAuth": "",
+        "nvAuth": ""
+        }
+            
+        if os.path.exists(filename):
+                try:
+                    with open(filename, 'r') as f:
+                        values = json.load(f)
+                except Exception as e:
+                    self.right_txt_display.AppendText(f"Error reading existing auth values: {e}")
+                    values = default_values.copy()
+        else:
+                values = default_values.copy()
+                
+        values["nvAuth"] = nv_auth_val
+
+        try:
+                with open(filename, 'w') as f:
+                        json.dump(values, f, indent=2)
+        except Exception as e:
+                self.right_txt_display.AppendText(f"Error saving auth values: {e}")
         
         self.right_txt_display.AppendText(str(command_output))
         self.right_txt_display.AppendText("'tpm2_nvdefine' executed \n")
@@ -830,6 +875,7 @@ class Tab_NVM(wx.Panel):
         owner_val = self.owner_input.GetValue()
         nv_auth_val = self.nv_auth_input.GetValue()
         nvm_data = self.nvm_data.GetValue()
+        filename = 'tpm_auth.json'
         if ((nvm_index == 0) | (nvm_data == 0)):
             return
         data_file = open("nvm_data.txt", "w")
@@ -1067,10 +1113,10 @@ class Tab_Handles(wx.Panel):
             "tpm2_evictcontrol",
             "-C", "o",
             "-c", specific_handle,
-            "-P", exec_cmd.ownerAuth,
+            "-P", exec_cmd.get_auth_from_config('owner'),
         ])
         self.txt_display.AppendText(str(command_output))
-        self.txt_display.AppendText("'tpm2_evictcontrol -C o -c " + specific_handle + " -P " + exec_cmd.ownerAuth + "' executed \n")
+        self.txt_display.AppendText("'tpm2_evictcontrol -C o -c " + specific_handle + " -P " + exec_cmd.get_auth_from_config('owner') + "' executed \n")
         self.txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
                                         
     def OnReadPersistent(self, evt):
@@ -1113,9 +1159,11 @@ class Tab1Frame(wx.Frame):
 
         # Instantiate all objects
         tab_base = wx.Notebook(self, id=wx.ID_ANY, style=wx.NB_TOP)
+        tab_base.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnTabChanged)
         tab1_setup = Tab_Setup(tab_base)
         tab2_pcr = Tab_PCR(tab_base)
         tab3_nvm = Tab_NVM(tab_base)
+        self.tab3_nvm = tab3_nvm
         tab4_context = Tab_Handles(tab_base)
 
         # Add tabs
@@ -1125,6 +1173,12 @@ class Tab1Frame(wx.Frame):
         tab_base.AddPage(tab4_context, 'Handle Management')
 
         self.Show(True)
+        
+    def OnTabChanged(self, event):
+        selected = event.GetSelection()
+        if selected == 2:  
+                self.tab3_nvm.OnRefreshOwnerAuth()
+        event.Skip() 
 
     def OnCloseWindow(self, evt):
         self.Parent.Show()
