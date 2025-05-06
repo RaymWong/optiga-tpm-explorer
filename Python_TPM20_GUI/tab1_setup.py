@@ -312,6 +312,7 @@ class Tab_PCR(wx.Panel):
         self.user_input.AppendText("0123456789ABCDEF")
 
         # declare and bind events
+        self.Bind(wx.EVT_CHECKBOX, self.OnSHACheckboxChanged, self.sha_checkbox)
         self.Bind(wx.EVT_BUTTON, self.OnPCRListAll, button_pcrlistall)
         self.Bind(wx.EVT_BUTTON, self.OnPCRList, button_pcrlist)
         self.Bind(wx.EVT_BUTTON, self.OnPCRExtend, button_pcrextend)
@@ -322,6 +323,39 @@ class Tab_PCR(wx.Panel):
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
         self.Centre()
+            
+    def OnSHACheckboxChanged(self, event):
+        is_sha2 = self.sha_checkbox.GetValue()  # True if checked = SHA-2
+
+        # Run the corresponding command before showing the dialog
+        if is_sha2:
+            command_output = exec_cmd.execTpmToolsAndCheck([
+                "tpm2_pcrallocate",
+                "sha1:none+sha256:all"
+            ])
+            self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:none+sha256:all' executed\n")
+        else:
+            command_output = exec_cmd.execTpmToolsAndCheck([
+                "tpm2_pcrallocate",
+                "sha1:all+sha256:none"
+            ])
+            self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:all+sha256:none' executed\n")
+
+        # Then show the popup dialog
+        dlg = misc.SHACheckboxChangedDlg(self, is_sha2=is_sha2)
+        result = dlg.ShowModal()
+        dlg.Destroy()
+
+        # If user pressed Cancel, revert the checkbox and show note
+        if result== wx.ID_YES:
+            command_output = exec_cmd.execTpmToolsAndCheck([
+                "tpm2_startup",
+                "--clear"
+            ])
+            self.bottom_txt_display.AppendText("'tpm2_startup --clear' executed\n")           
+        else:
+            self.sha_checkbox.SetValue(not is_sha2)
+            self.bottom_txt_display.AppendText("User canceled the change, checkbox reverted\n")
 
     def OnPCRListAll(self, evt):
         hash_alg = self.sha_checkbox.GetValue()

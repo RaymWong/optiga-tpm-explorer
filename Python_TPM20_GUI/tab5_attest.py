@@ -165,6 +165,17 @@ class Tab5Frame(wx.Frame):
     def OnGenEK(self, evt):
         owner_auth = exec_cmd.get_auth_from_config('owner')
         endorse_auth = exec_cmd.get_auth_from_config('endorse')
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        self.ekevict = False
+        
+        if "0x81010001" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth,"-c", "0x81010001"
+            ])
+            self.ekevict = True
+        else:
+            self.ekevict = False
+            
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createek",
             "-P", endorse_auth,
@@ -175,6 +186,8 @@ class Tab5Frame(wx.Frame):
         ])
         self.command_out.AppendText(str(command_output))
         self.command_out.AppendText("\n")
+        if self.ekevict == True:
+            self.command_out.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81010001 \n")
         self.command_out.AppendText("'tpm2_createek -P " + endorse_auth + " -w " + owner_auth + " -c 0x81010001 -G rsa -u ek.pub' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
@@ -191,6 +204,13 @@ class Tab5Frame(wx.Frame):
         exec_cmd.execCLI(["rm", "tpmquote.data", ])
         owner_auth = exec_cmd.get_auth_from_config('owner')
         endorse_auth = exec_cmd.get_auth_from_config('endorse')
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        self.akevict = False
+        if specific_handle in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", specific_handle
+        ])
+            self.akevict = True
         
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createak",
@@ -202,6 +222,7 @@ class Tab5Frame(wx.Frame):
             "-n", "ak.name",
             "-c", "ak.ctx",
         ])
+            
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
@@ -210,12 +231,12 @@ class Tab5Frame(wx.Frame):
             specific_handle
         ])
 
-
         self.command_out.AppendText(str(command_output))
         self.command_out.AppendText("\n")
+        if self.akevict == True:
+            self.command_out.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c {specific_handle} \n")
         self.command_out.AppendText("'tpm2_createak -P " + endorse_auth + " -C 0x81010001 -G rsa -u ak_pub.bin -n ak.name -c ak.ctx' executed \n")
         self.command_out.AppendText("'tpm2_evictcontrol -C o -P " + owner_auth + " -c ak.ctx " + specific_handle + " executed \n")
-
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnGenQuote1(self, evt):
