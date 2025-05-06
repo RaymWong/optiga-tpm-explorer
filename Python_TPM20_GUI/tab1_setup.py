@@ -323,33 +323,7 @@ class Tab_PCR(wx.Panel):
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
         self.Centre()
-        
-    def OnSHACheckboxChanged(self, event):
-        is_sha2 = self.sha_checkbox.GetValue()  # True if checked = SHA-2
-
-        dlg = misc.SHACheckboxChangedDlg(self, is_sha2=is_sha2)
-        result = dlg.ShowModal()
-        dlg.Destroy()
-
-        if result == wx.ID_YES:
-            # User pressed RESET
-            if is_sha2:
-                command_output = exec_cmd.execTpmToolsAndCheck([
-                    "tpm2_pcrallocate",
-                    "sha1:none+sha256:all"
-                ])
-                self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:none+sha256:all' execeuted \n")
-            else:
-                command_output = exec_cmd.execTpmToolsAndCheck([
-                    "tpm2_pcrallocate",
-                    "sha1:all+sha256:none"
-                ])
-                self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:all+sha256:none' execeuted \n")
-        else:
-            # User pressed Cancel, revert checkbox state
-            self.sha_checkbox.SetValue(not is_sha2)
             
-
     def OnSHACheckboxChanged(self, event):
         is_sha2 = self.sha_checkbox.GetValue()  # True if checked = SHA-2
 
