@@ -187,13 +187,14 @@ class Tab_RSA(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAprimary.ctx"])
         
         handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        evict_status = False
         if "0x81000004" in handles_output:
             command_output = exec_cmd.execCLI([
                 "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000004"
         ])
-            self.primaryevict = True
+            evict_status = True
         else:
-            self.primaryevict = False
+            evict_status = False
             
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
@@ -213,7 +214,7 @@ class Tab_RSA(wx.Panel):
             "0x81000004",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        if self.primaryevict == True:
+        if evict_status == True:
             self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000004 \n")
         self.command_display.AppendText("tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G rsa -c RSAprimary.ctx\n")
         self.command_display.AppendText("tpm2_evictcontrol -C o -c RSAprimary.ctx -P " + owner_auth + " 0x81000004\n")
@@ -229,14 +230,15 @@ class Tab_RSA(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAPub.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "RSAkey_name_structure.data"])
         owner_auth = exec_cmd.get_auth_from_config('owner')
-        self.childevict = False
+        evict_status = False
         handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
-        if self.primaryevict == True and "0x81000005" in handles_output:
+        if "0x81000005" in handles_output:
             command_output = exec_cmd.execCLI([
                 "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000005"
         ])
-            self.primaryevict = False
-            self.childkeyevict = True
+            evict_status = True
+        else:
+            evict_status = False
             
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_create",
@@ -259,12 +261,6 @@ class Tab_RSA(wx.Panel):
         ])
         self.command_display.AppendText(str(output_message))
         self.Update()
-        
-        if "0x81000005" in handles_output:
-            command_output = exec_cmd.execCLI([
-                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000005"
-        ])
-            self.childevict = True
             
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
@@ -274,9 +270,8 @@ class Tab_RSA(wx.Panel):
             "0x81000005",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        if self.childevict == True:
+        if evict_status == True:
             self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000005 \n")
-            self.childevict = False
         self.command_display.AppendText("tpm2_create -C 0x81000004 -g sha256 -G rsa -r RSAPriv.key -u RSAPub.key\n")
         self.command_display.AppendText("tpm2_load -C 0x81000004 -u RSAPub.key -r RSAPriv.key -n RSAkey_name_structure.data -c RSAkeycontext.ctx\n")
         self.command_display.AppendText("tpm2_evictcontrol -a o -c RSAkeycontext.ctx -p 0x81000005 -P " + owner_auth + "\n")
@@ -561,13 +556,14 @@ class Tab_ECC(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCprimary.ctx"])
         
         handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        evict_status = False
         if "0x81000006" in handles_output:
             command_output = exec_cmd.execCLI([
                 "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000006"
         ])
-            self.primaryevict = True
+            evict_status = True
         else:
-            self.primaryevict = False
+            evict_status = False
             
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
@@ -588,7 +584,7 @@ class Tab_ECC(wx.Panel):
             "0x81000006"
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        if self.primaryevict == True:
+        if evict_status == True:
             self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000006 \n")
         self.command_display.AppendText("tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G 0x0023 -c ECCprimary.ctx\n")
         self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCprimary.ctx -p 0x81000006 -P " + owner_auth + "\n")
@@ -604,14 +600,15 @@ class Tab_ECC(wx.Panel):
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCpub.key"])
         exec_cmd.execTpmToolsAndCheck(["rm", "ECCname.data"])
         owner_auth = exec_cmd.get_auth_from_config('owner')
-        self.childevict = False
+        evict_status = False
         handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
-        if self.primaryevict == True and "0x81000007" in handles_output:
+        if "0x81000007" in handles_output:
             command_output = exec_cmd.execCLI([
                 "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000007"
         ])
-            self.primaryevict = False
-            self.childkeyevict = True
+            evict_status = True
+        else:
+            evict_status = False
             
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_create",
@@ -634,12 +631,6 @@ class Tab_ECC(wx.Panel):
         ])
         self.command_display.AppendText(str(output_message))
         self.Update()
-        
-        if "0x81000007" in handles_output:
-            command_output = exec_cmd.execCLI([
-                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000007"
-        ])
-            self.childevict = True
             
         output_message = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
@@ -649,9 +640,8 @@ class Tab_ECC(wx.Panel):
             "0x81000007",
         ])
         self.command_display.AppendText(str(output_message) + "\n")
-        if self.childevict == True:
+        if evict_status == True:
             self.command_display.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000007 \n")
-            self.childevict = False
         self.command_display.AppendText("tpm2_create -C 0x81000006 -p ECCleaf123 -g sha256 -G ecc -r ECCpri.key -u ECCpub.key\n")
         self.command_display.AppendText("tpm2_load -C 0x81000006 -u ECCpub.key -r ECCpri.key -n ECCname.data -c ECCkeycontext.ctx\n")
         self.command_display.AppendText("tpm2_evictcontrol -C o -c ECCkeycontext.ctx -P " + owner_auth + " 0x81000007\n")

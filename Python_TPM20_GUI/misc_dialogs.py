@@ -376,8 +376,6 @@ class Not_IFX_TPM_Dlg(wx.MessageDialog):
         self.Destroy()
 
 
-
-
 # Generic File Editor for AWS Cloud connectivity (for tab6 use)
 class EditorFrame(wx.Dialog):
     def __init__(self, parent, title, filename):
@@ -480,3 +478,45 @@ To fix this problem:\n\
     def OnCloseWindow(self, evt):
         self.EndModal(-1)
         self.Destroy()
+        
+class SHACheckboxChangedDlg(wx.Dialog):
+    def __init__(self, parent, is_sha2=True):
+        super().__init__(parent, title="PCR Bank Changed", size=(430, 140))
+
+        message_text = (
+            "You have switched to SHA-2 mode for PCR List && Extend.\nPress the 'RESET' button on the TPM to apply changes."
+            if is_sha2 else
+            "You have switched to SHA-1 mode for PCR List && Extend.\nPress the 'RESET' button on the TPM to apply changes."
+        )
+
+        message = wx.StaticText(self, label=message_text)
+
+        reset_btn = wx.Button(self, wx.ID_YES, "Reset Pressed")
+        cancel_btn = wx.Button(self, wx.ID_CANCEL, "Cancel")
+
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer.Add(message, 1, wx.ALL | wx.EXPAND, 15)
+
+        btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        btn_sizer.AddStretchSpacer()
+        btn_sizer.Add(cancel_btn, 0, wx.ALL, 10)
+        btn_sizer.Add(reset_btn, 0, wx.ALL, 10)
+
+        main_sizer.Add(btn_sizer, 0, wx.EXPAND)
+
+        self.SetSizer(main_sizer)
+        self.Layout()
+
+        self.Bind(wx.EVT_BUTTON, self.OnReset, reset_btn)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, cancel_btn)
+
+    def OnCloseWindow(self, evt):
+        self.EndModal(wx.ID_CANCEL)
+        self.Destroy()
+        
+    def OnReset(self, event):
+        self.EndModal(wx.ID_YES)
+
+    def OnCancel(self, event):
+        self.EndModal(wx.ID_CANCEL)
+
