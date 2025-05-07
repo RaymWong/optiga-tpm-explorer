@@ -15,7 +15,7 @@ class Tab4Frame(wx.Frame):
         wx.Frame.__init__(self, parent, title="Enhanced Authorisation", size=(1280, 720), style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
         self.Centre(wx.BOTH)
         self.SetBackgroundColour(wx.WHITE)
-        main_menu_font = wx.Font(14, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        main_menu_font = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.SetFont(main_menu_font)
 
         # declare the sizers
