@@ -480,13 +480,12 @@ To fix this problem:\n\
         self.Destroy()
         
 class SHACheckboxChangedDlg(wx.Dialog):
-    def __init__(self, parent, is_sha2=True):
-        super().__init__(parent, title="PCR Bank Changed", size=(430, 140))
+    def __init__(self, parent, selected_hash="SHA-256"):
+        super().__init__(parent, title="PCR Bank Changed", size=(450, 140))
 
         message_text = (
-            "You have switched to SHA-2 mode for PCR List && Extend.\nPress the 'RESET' button on the TPM to apply changes."
-            if is_sha2 else
-            "You have switched to SHA-1 mode for PCR List && Extend.\nPress the 'RESET' button on the TPM to apply changes."
+            f"You have switched to {selected_hash} mode for PCR List && Extend.\n"
+            "Press the 'RESET' button on the TPM to apply changes."
         )
 
         message = wx.StaticText(self, label=message_text)
@@ -510,10 +509,6 @@ class SHACheckboxChangedDlg(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnReset, reset_btn)
         self.Bind(wx.EVT_BUTTON, self.OnCancel, cancel_btn)
 
-    def OnCloseWindow(self, evt):
-        self.EndModal(wx.ID_CANCEL)
-        self.Destroy()
-        
     def OnReset(self, event):
         self.EndModal(wx.ID_YES)
 
