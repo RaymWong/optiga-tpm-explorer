@@ -355,7 +355,7 @@ class Tab_PCR(wx.Panel):
 
 
         # Then show the popup dialog
-        dlg = misc.SHACheckboxChangedDlg(self, is_sha2=is_sha2)
+        dlg = misc.SHACheckboxChangedDlg(self, selected_hash=selected_sha)
         result = dlg.ShowModal()
         dlg.Destroy()
 
@@ -367,78 +367,77 @@ class Tab_PCR(wx.Panel):
             ])
             self.bottom_txt_display.AppendText("'tpm2_startup --clear' executed\n")           
         else:
-            self.sha_checkbox.SetValue(not is_sha2)
-            self.bottom_txt_display.AppendText("User canceled the change, checkbox reverted\n")
+            self.sha_listchoice.SetSelection(0)  # Reverts to "SHA-1" (or whatever default you prefer)
+            self.bottom_txt_display.AppendText("User canceled the change, ComboBox reverted\n")
 
     def OnPCRListAll(self, evt):
-        hash_alg = self.sha_checkbox.GetValue()
+        # Map GUI display values to TPM command values
+        hash_map = {
+            "SHA-1": "sha1",
+            "SHA-256": "sha256",
+            "SHA-384": "sha384"
+        }
+
+        selected_label = self.sha_listchoice.GetStringSelection()
+        selected_hash = hash_map.get(selected_label)
+
         pcr_choice = self.pcr_bank_choice.GetStringSelection()
-        hashinput = self.user_input.GetValue()
-        if (len(pcr_choice) == 0):
+
+        if not selected_hash or not pcr_choice:
             return
-        elif (len(hashinput) == 0):
-            return
-        if (hash_alg):
-            command_output = exec_cmd.execTpmToolsAndCheck([
-                "tpm2_pcrread",
-                "sha256",
-            ])
-        else:
-            command_output = exec_cmd.execTpmToolsAndCheck([
-                "tpm2_pcrread",
-                "sha1",
-            ])
+
+        command_output = exec_cmd.execTpmToolsAndCheck([
+            "tpm2_pcrread",
+            selected_hash,
+        ])
+
         self.bottom_txt_display.AppendText(str(command_output))
-        self.bottom_txt_display.AppendText("'tpm2_pcrread shaxxx' executed \n")
+        self.bottom_txt_display.AppendText(f"'tpm2_pcrread {selected_hash}' executed \n")
         self.bottom_txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnPCRList(self, evt):
-        hash_alg = self.sha_checkbox.GetValue()
         pcr_choice = self.pcr_bank_choice.GetStringSelection()
-        hashinput = self.user_input.GetValue()
-        if (len(pcr_choice) == 0):
-            return
-        elif (len(hashinput) == 0):
-            return
-        if (hash_alg):
-            command_output = exec_cmd.execTpmToolsAndCheck([
-                "tpm2_pcrread",
-                "sha256:" + pcr_choice,
-            ])
-        else:
-            command_output = exec_cmd.execTpmToolsAndCheck([
-                "tpm2_pcrread",
-                "sha1:" + pcr_choice,
-            ])
+
+        command_output = exec_cmd.execTpmToolsAndCheck([
+            "tpm2_pcrread",
+            f"sha1:{pcr_choice}+sha256:{pcr_choice}+sha384:{pcr_choice}",
+        ])
+
         self.bottom_txt_display.AppendText(str(command_output))
-        self.bottom_txt_display.AppendText("'tpm2_pcrread' executed \n")
+        self.bottom_txt_display.AppendText(
+            f"'tpm2_pcrread sha1:{pcr_choice}+sha256:{pcr_choice}+sha384:{pcr_choice}' executed\n"
+        )
         self.bottom_txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnPCRExtend(self, evt):
+        # Map GUI selection to hash algorithm name
+        hash_map = {
+            "SHA-1": ("sha1", 40),
+            "SHA-256": ("sha256", 64),
+            "SHA-384": ("sha384", 96),
+        }
+
+        selected_label = self.sha_listchoice.GetStringSelection()
+        hash_info = hash_map.get(selected_label)
+
+        hash_ver, expected_len = hash_info
         pcr_choice = self.pcr_bank_choice.GetStringSelection()
-        hash_alg = self.sha_checkbox.GetValue()
         hashinput = self.user_input.GetValue()
-        if (len(pcr_choice) == 0):
+
+        if not hashinput:
+            self.bottom_txt_display.AppendText("Input cannot be empty.\n")
             return
-        elif (len(hashinput) == 0):
+
+        # Convert and check HEX input length
+        extend_input = exec_cmd.convertInputToHex(hashinput, expected_len)
+        if extend_input == 0:
+            self.bottom_txt_display.AppendText(f"Input must be in HEX please.\n")
             return
-        if (hash_alg):
-            hash_ver = 'sha256'
-        else:
-            hash_ver = 'sha1'
-        # for SHA-1: input MUST BE HEX and len==40
-        # for SHA-2: input MUST BE HEX and len==64 characters
-        if (hash_alg):
-            extend_input = exec_cmd.convertInputToHex(hashinput, 64)
-        else:
-            extend_input = exec_cmd.convertInputToHex(hashinput, 40)
-        if (extend_input == 0):
-            self.bottom_txt_display.AppendText("Input must be in HEX please. \n")
-            return
+
         self.bottom_txt_display.AppendText("Input= " + extend_input + "\n")
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_pcrextend",
-            pcr_choice + ":" + hash_ver + "=" + extend_input,
+            f"{pcr_choice}:{hash_ver}={extend_input}",
         ])
         self.bottom_txt_display.AppendText(str(command_output))
         self.bottom_txt_display.AppendText("'tpm2_pcrextend' executed \n")
@@ -447,13 +446,18 @@ class Tab_PCR(wx.Panel):
     def OnPCREvent(self, evt):
         hashinput = self.user_input.GetValue()
         pcr_choice = self.pcr_bank_choice.GetStringSelection()
-        if (len(pcr_choice) == 0):
+
+        if not hashinput:
+            self.bottom_txt_display.AppendText("Input cannot be empty.\n")
             return
-        elif (len(hashinput) == 0):
+
+        try:
+            with open("pcrevent_data.txt", "w") as data_file:
+                data_file.write(hashinput)
+        except IOError as e:
+            self.bottom_txt_display.AppendText(f"Failed to write input file: {e}\n")
             return
-        data_file = open("pcrevent_data.txt", "w")
-        data_file.write(hashinput)
-        data_file.close()
+
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_pcrevent",
             pcr_choice,
@@ -462,6 +466,7 @@ class Tab_PCR(wx.Panel):
         self.bottom_txt_display.AppendText(str(command_output))
         self.bottom_txt_display.AppendText("'tpm2_pcrevent' executed \n")
         self.bottom_txt_display.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
+
 
     def OnClear(self, evt):
         self.bottom_txt_display.Clear()
