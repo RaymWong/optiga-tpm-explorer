@@ -1199,7 +1199,7 @@ class Tab1Frame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title="TPM Setup", size=(1280, 720), style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
         self.Centre(wx.BOTH)
-        main_menu_font = wx.Font(14, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        main_menu_font = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         #~ main_menu_font = wx.Font(16, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.SetFont(main_menu_font)
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
