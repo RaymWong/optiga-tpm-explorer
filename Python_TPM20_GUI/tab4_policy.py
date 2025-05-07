@@ -15,7 +15,7 @@ class Tab4Frame(wx.Frame):
         wx.Frame.__init__(self, parent, title="Enhanced Authorisation", size=(1280, 720), style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
         self.Centre(wx.BOTH)
         self.SetBackgroundColour(wx.WHITE)
-        main_menu_font = wx.Font(14, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        main_menu_font = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.SetFont(main_menu_font)
 
         # declare the sizers
@@ -142,6 +142,16 @@ class Tab4Frame(wx.Frame):
     
     def OnNewPrimary(self):
         owner_auth = exec_cmd.get_auth_from_config('owner')
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        self.polievict = False
+        if "0x81000001" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", "0x81000001"
+            ])
+            self.polievict = True
+        else:
+            self.polievict = False
+        
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createprimary",
             "-C", "o",
@@ -151,7 +161,6 @@ class Tab4Frame(wx.Frame):
             "-c", "primary.ctx",
         ])
         self.command_out.AppendText(str(command_output))
-        self.command_out.AppendText("'tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G ecc -c primary.ctx' executed \n")
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
@@ -160,6 +169,9 @@ class Tab4Frame(wx.Frame):
             "0x81000001",
         ])
         self.command_out.AppendText(str(command_output))
+        if self.polievict == True:
+            self.command_out.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81000001 \n")
+        self.command_out.AppendText("'tpm2_createprimary -C o -P " + owner_auth + " -g sha256 -G ecc -c primary.ctx' executed \n")
         self.command_out.AppendText("'tpm2_evictcontrol -a o -c primary.ctx -P " + owner_auth + " 0x81000001' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 

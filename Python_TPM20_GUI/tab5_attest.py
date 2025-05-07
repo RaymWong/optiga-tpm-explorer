@@ -11,7 +11,7 @@ class Tab5Frame(wx.Frame):
         wx.Frame.__init__(self, parent, title="Attestation", size=(1280, 720), style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
         self.Centre(wx.BOTH)
         self.SetBackgroundColour(wx.WHITE)
-        main_menu_font = wx.Font(14, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        main_menu_font = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.SetFont(main_menu_font)
 
         # declare the sizers
@@ -37,7 +37,7 @@ class Tab5Frame(wx.Frame):
         ek_blurb = wx.StaticText(self, -1, "EK Handle: 0x81010001")
         ak_blurb = wx.StaticText(self, -1, "AK/EK handle: ")
         settings_blurb = wx.StaticText(self, -1, "Settings: ")
-        settings_blurb.SetFont(wx.Font(20, wx.ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        settings_blurb.SetFont(wx.Font(20, wx.SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         self.ak_handle_input = wx.TextCtrl(self, -1)
         button_gen_ek = wx.Button(self, -1, 'Generate EK, if not created yet', size = (350, -1))
         button_gen_ak = wx.Button(self, -1, 'Generate AK from EK', size = (350 ,48))
@@ -165,6 +165,17 @@ class Tab5Frame(wx.Frame):
     def OnGenEK(self, evt):
         owner_auth = exec_cmd.get_auth_from_config('owner')
         endorse_auth = exec_cmd.get_auth_from_config('endorse')
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        self.ekevict = False
+        
+        if "0x81010001" in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth,"-c", "0x81010001"
+            ])
+            self.ekevict = True
+        else:
+            self.ekevict = False
+            
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createek",
             "-P", endorse_auth,
@@ -175,6 +186,8 @@ class Tab5Frame(wx.Frame):
         ])
         self.command_out.AppendText(str(command_output))
         self.command_out.AppendText("\n")
+        if self.ekevict == True:
+            self.command_out.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c 0x81010001 \n")
         self.command_out.AppendText("'tpm2_createek -P " + endorse_auth + " -w " + owner_auth + " -c 0x81010001 -G rsa -u ek.pub' executed \n")
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
@@ -191,6 +204,13 @@ class Tab5Frame(wx.Frame):
         exec_cmd.execCLI(["rm", "tpmquote.data", ])
         owner_auth = exec_cmd.get_auth_from_config('owner')
         endorse_auth = exec_cmd.get_auth_from_config('endorse')
+        handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
+        self.akevict = False
+        if specific_handle in handles_output:
+            command_output = exec_cmd.execCLI([
+                "tpm2_evictcontrol", "-C", "o", "-P", owner_auth, "-c", specific_handle
+        ])
+            self.akevict = True
         
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_createak",
@@ -202,6 +222,7 @@ class Tab5Frame(wx.Frame):
             "-n", "ak.name",
             "-c", "ak.ctx",
         ])
+            
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
@@ -210,12 +231,12 @@ class Tab5Frame(wx.Frame):
             specific_handle
         ])
 
-
         self.command_out.AppendText(str(command_output))
         self.command_out.AppendText("\n")
+        if self.akevict == True:
+            self.command_out.AppendText(f"tpm2_evictcontrol -C o -P {owner_auth} -c {specific_handle} \n")
         self.command_out.AppendText("'tpm2_createak -P " + endorse_auth + " -C 0x81010001 -G rsa -u ak_pub.bin -n ak.name -c ak.ctx' executed \n")
         self.command_out.AppendText("'tpm2_evictcontrol -C o -P " + owner_auth + " -c ak.ctx " + specific_handle + " executed \n")
-
         self.command_out.AppendText("++++++++++++++++++++++++++++++++++++++++++++\n")
 
     def OnGenQuote1(self, evt):
