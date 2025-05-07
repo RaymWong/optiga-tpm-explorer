@@ -11,7 +11,7 @@ class Tab5Frame(wx.Frame):
         wx.Frame.__init__(self, parent, title="Attestation", size=(1280, 720), style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
         self.Centre(wx.BOTH)
         self.SetBackgroundColour(wx.WHITE)
-        main_menu_font = wx.Font(14, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        main_menu_font = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.SetFont(main_menu_font)
 
         # declare the sizers
@@ -37,7 +37,7 @@ class Tab5Frame(wx.Frame):
         ek_blurb = wx.StaticText(self, -1, "EK Handle: 0x81010001")
         ak_blurb = wx.StaticText(self, -1, "AK/EK handle: ")
         settings_blurb = wx.StaticText(self, -1, "Settings: ")
-        settings_blurb.SetFont(wx.Font(20, wx.ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        settings_blurb.SetFont(wx.Font(20, wx.SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         self.ak_handle_input = wx.TextCtrl(self, -1)
         button_gen_ek = wx.Button(self, -1, 'Generate EK, if not created yet', size = (350, -1))
         button_gen_ak = wx.Button(self, -1, 'Generate AK from EK', size = (350 ,48))

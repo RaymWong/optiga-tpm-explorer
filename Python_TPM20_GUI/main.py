@@ -16,7 +16,7 @@ class MainFrame(wx.Frame):
         wx.Frame.__init__(self, parent, title="Main Window", style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
         self.SetBackgroundColour(wx.WHITE)
         # Set Font for frame, so all buttons will inherit this, so it saves time
-        main_menu_font = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        main_menu_font = wx.Font(16, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.SetFont(main_menu_font)
 
         # Create all the button widgets first
@@ -29,7 +29,7 @@ class MainFrame(wx.Frame):
         # Title screen widget setup
         # "\xe2\x84\xa2" represents the Trademark symbol in UTF-8 for Python 2.x, will not display properly on Windows (or Python 3.x)
         title_screen = wx.StaticText(self, -1, style=wx.ALIGN_CENTER, label="OPTIGA"+ u"\u1d40\u1d39"+" TPM 2.0 Explorer")
-        font = wx.Font(30, wx.ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        font = wx.Font(30, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
         title_screen.SetFont(font)
         # TPM Image
         tpm_image = wx.Image('../images/tpm_slb_9670.png', wx.BITMAP_TYPE_PNG)
