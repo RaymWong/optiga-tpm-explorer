@@ -8,8 +8,9 @@ import subprocess
 import os
 import json
 from subprocess import PIPE
-# the tpm has 24 banks
+
 pcr_index_list = [str(value) for value in range(0, 24)]
+pcr_bank_list = ["SHA-1", "SHA-256", "SHA-384"]
 # from TPM 2.0 Part 2 Structures pg 159 of pdf (section 13.1, table 204)
 # Note: 0x80020002 is default for ownerwrite|ownerread|read_stclear
 nvm_attr_list = [
@@ -256,8 +257,10 @@ class Tab_PCR(wx.Panel):
         bottom_row_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         # instantiate the objects
-        self.sha_checkbox = wx.CheckBox(self, -1, "For PCR List && Extend: Checked = SHA-2, Unchecked = SHA-1")
-        self.sha_checkbox.SetValue(True)
+        #self.sha_checkbox = wx.CheckBox(self, -1, "For PCR List && Extend: Checked = SHA-2, Unchecked = SHA-1")
+        #self.sha_checkbox.SetValue(True)
+        self.sha_listtext = wx.StaticText(self, -1, "For PCR List && Extend: ")
+        self.sha_listchoice = wx.ComboBox(self, -1, choices=pcr_bank_list, style=wx.CB_READONLY)
         text_for_pcrbank = wx.StaticText(self, -1, "Choose your PCR Index: ")
         self.pcr_bank_choice = wx.ComboBox(self, -1, "Pick the PCR Index", choices=pcr_index_list, style=wx.CB_READONLY)
         text_for_userinput = wx.StaticText(self, -1, "Input for PCR operations: ")
@@ -278,15 +281,17 @@ class Tab_PCR(wx.Panel):
 
 
         # attach the sizers to the main sizer
-        mainsizer.Add(top_row_sizer, 0, wx.TOP, 5)
+        mainsizer.Add(top_row_sizer, 0, wx.TOP | wx.LEFT, 5)
         mainsizer.Add(middle_row_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
         mainsizer.Add(bottom_row_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
         mainsizer.Add(self.bottom_txt_display, 1, wx.EXPAND | wx.TOP, 5)
 
         # attach the ui elements to the internal sizer
-        top_row_sizer.Add(self.sha_checkbox, 0, wx.ALL, 5)
-        top_row_sizer.Add((200, 10), proportion=1, flag=wx.EXPAND)
-        top_row_sizer.AddSpacer(60)
+        #top_row_sizer.Add(self.sha_checkbox, 0, wx.ALL, 5)
+        top_row_sizer.Add(self.sha_listtext, 2, wx.ALIGN_CENTRE | wx.LEFT, 8)
+        top_row_sizer.Add(self.sha_listchoice, 1, wx.ALL, 5)
+        top_row_sizer.Add((500, 10), proportion=1, flag=wx.EXPAND)
+        #top_row_sizer.AddSpacer(60)
         top_row_sizer.Add(text_for_pcrbank, 2, wx.ALIGN_CENTRE, 5)
         top_row_sizer.Add(self.pcr_bank_choice, 1, wx.ALL, 5)
         middle_row_sizer.AddSpacer(5)
@@ -307,12 +312,13 @@ class Tab_PCR(wx.Panel):
         clearbutton.SetToolTip(wx.ToolTip("Clear all textboxes."))
 
         # set defaults
+        self.sha_listchoice.SetSelection(0)
         self.pcr_bank_choice.SetSelection(0)
         self.user_input.Clear()
         self.user_input.AppendText("0123456789ABCDEF")
 
         # declare and bind events
-        self.Bind(wx.EVT_CHECKBOX, self.OnSHACheckboxChanged, self.sha_checkbox)
+        self.Bind(wx.EVT_COMBOBOX, self.OnSHACheckboxChanged, self.sha_listchoice)
         self.Bind(wx.EVT_BUTTON, self.OnPCRListAll, button_pcrlistall)
         self.Bind(wx.EVT_BUTTON, self.OnPCRList, button_pcrlist)
         self.Bind(wx.EVT_BUTTON, self.OnPCRExtend, button_pcrextend)
@@ -325,21 +331,28 @@ class Tab_PCR(wx.Panel):
         self.Centre()
             
     def OnSHACheckboxChanged(self, event):
-        is_sha2 = self.sha_checkbox.GetValue()  # True if checked = SHA-2
-
+        selected_sha = self.sha_listchoice.GetValue()
+        
         # Run the corresponding command before showing the dialog
-        if is_sha2:
+        if selected_sha == "SHA-256":
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_pcrallocate",
-                "sha1:none+sha256:all"
+                "sha1:none+sha256:all+sha384:none"
             ])
-            self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:none+sha256:all' executed\n")
-        else:
+            self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:none+sha256:all+sha384:none' executed\n")
+        elif selected_sha == "SHA-384":
             command_output = exec_cmd.execTpmToolsAndCheck([
                 "tpm2_pcrallocate",
-                "sha1:all+sha256:none"
+                "sha1:none+sha256:none+sha384:all"
             ])
-            self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:all+sha256:none' executed\n")
+            self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:none+sha256:none+sha384:all' executed\n")
+        else:  # default case for SHA-1
+            command_output = exec_cmd.execTpmToolsAndCheck([
+                "tpm2_pcrallocate",
+                "sha1:all+sha256:none+sha384:none"
+            ])
+            self.bottom_txt_display.AppendText("'tpm2_pcrallocate sha1:all+sha256:none+sha384:none' executed\n")
+
 
         # Then show the popup dialog
         dlg = misc.SHACheckboxChangedDlg(self, is_sha2=is_sha2)
