@@ -7,6 +7,7 @@ import binascii
 import subprocess
 import os
 import json
+import re
 from subprocess import PIPE
 
 pcr_index_list = [str(value) for value in range(0, 24)]
@@ -312,7 +313,13 @@ class Tab_PCR(wx.Panel):
         clearbutton.SetToolTip(wx.ToolTip("Clear all textboxes."))
 
         # set defaults
-        self.sha_listchoice.SetSelection(0)
+        normalized_bank = re.sub(r'^(sha)(\d+)$', r'\1-\2', self.get_active_pcr_bank()).upper()
+        try:
+                index = pcr_bank_list.index(normalized_bank)
+                self.sha_listchoice.SetSelection(index)
+        except ValueError:
+                pass
+
         self.pcr_bank_choice.SetSelection(0)
         self.user_input.Clear()
         self.user_input.AppendText("0123456789ABCDEF")
@@ -329,6 +336,20 @@ class Tab_PCR(wx.Panel):
         self.SetSizer(mainsizer)
         mainsizer.Fit(self)
         self.Centre()
+        
+    def get_active_pcr_bank(self):
+        try:
+            output = subprocess.check_output(["tpm2_getcap", "pcrs"], universal_newlines=True)
+            # Match lines like: "  - sha256: [ 0, 1, ... ]"
+            matches = re.findall(r'- (sha[0-9]+):\s*\[\s*([0-9,\s]*)\]', output)
+
+            for bank, pcrs in matches:
+                if pcrs.strip():  # If the PCR list is non-empty
+                    return bank  # e.g., 'sha256'
+        except Exception as e:
+            self.bottom_txt_display.AppendText(f"Error fetching active PCR bank: {e}\n")
+        return None
+
             
     def OnSHACheckboxChanged(self, event):
         selected_sha = self.sha_listchoice.GetValue()
