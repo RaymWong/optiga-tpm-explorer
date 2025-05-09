@@ -12,7 +12,7 @@ import wx.lib.inspection
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, title="Main Window", style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
+        wx.Frame.__init__(self, parent, title="OPTIGA"+ u"\u1d40\u1d39"+" TPM 2.0 Explorer", style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
         self.SetBackgroundColour(wx.WHITE)
         # Set Font for frame, so all buttons will inherit this, so it saves time
         main_menu_font = wx.Font(16, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
