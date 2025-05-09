@@ -338,9 +338,6 @@ class Tab_PCR(wx.Panel):
         self.Centre()
         
     def get_active_pcr_bank(self):
-        import subprocess
-        import re
-
         try:
             output = subprocess.check_output(["tpm2_getcap", "pcrs"], universal_newlines=True)
             # Match lines like: "  - sha256: [ 0, 1, ... ]"
