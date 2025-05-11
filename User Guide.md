@@ -150,18 +150,12 @@ This section shows you the Setup features of the OPTIGA™ TPM 2.0 Explorer.
 
 ## Setup 
 
-Select "Setup and Basic Features".
+Select "Setup and Basic Features". Enter the OPTIGA™ TPM Setup Menu.
 
 | ![](images/Optiga_Setup/Setup/MainScreen.png) |
-| ---------------------------------------------- |
+| --------------------------------------------- |
 
 Figure 3: Setup and Basic Features Selection
-
-| ![](images/Optiga_Setup/Setup/Setup_Unedited/TPM_SetupScreen.png) |
-| ------------------------------------------------------------ |
-
-Figure 4: OPTIGA™ TPM Setup Menu Screen
-
 
 
 ### OPTIGA™ TPM Setup Functions
@@ -169,105 +163,156 @@ Figure 4: OPTIGA™ TPM Setup Menu Screen
 Setup function descriptions 
 
 | ![](images/Optiga_Setup/Setup/TPM_SetupScreen1.png) |
-| ---------------------------------------------------- |
+| --------------------------------------------------- |
 
-Figure 5: OPTIGA™ TPM Setup Menu Function Descriptions
+Figure 4: OPTIGA™ TPM Setup Menu Function Descriptions
 
 
  ### <a name="tpm-startup"></a>TPM Startup
 
 The OPTIGA™ TPM will startup by issuing the TPM2_startup command using TPM2 tools when the RPI is powered on. However, if the reset button is pressed, the TPM2_startup command must be invoked separately by clicking on the "Startup" button before running any TPM command or operation. Otherwise, the error message will be displayed "WARNING:esys:src/tss2-esys/api/Esys_StartAuthSession.c:390:Esys_StartAuthSession_Finish() Received TPM Error" if the "Startup" button is not selected prior to "Get TPM Capability (variable)" button.  
 
-| ![](images/Optiga_Setup/Setup/TPMResetStartupfail.png) |
-| ------------------------------------------------------- |
 
-Figure 6: Display TPM capability (variable) failure due to reset without running TPM2_startup
+```
+ERROR:esys:src/tss2-esys/api/Esys_GetCapability.c:307:Esys_GetCapability_Finish() Received a non-TPM Error 
+ERROR:esys:src/tss2-esys/api/Esys_GetCapability.c:107:Esys_GetCapability() Esys Finish ErrorCode (0x000a0008) 
+ERROR: Esys_GetCapability(0xA0008) - tcti:Fails to connect to next lower layer
+ERROR: Unable to run tpm2_getcap
+'tpm2_getcap properties-variable' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
 
-To startup the OPTIGA™ TPM, select the "Startup" button at (1). Then, check if the TPM is functional by selecting "Get TPM Capability (variable)" at (2). TPM variable parameters can now be displayed.  
+Error Message: Display TPM capability (variable) failure due to reset without running TPM2_startup
 
-| ![](images/Optiga_Setup/Setup/TPMResetStartupSuccess.png) |
-| ---------------------------------------------------------- |
 
-Figure 7: Display TPM capability (variable) successfully after TPM2_startup
+To startup the OPTIGA™ TPM, select the "Startup" button in the left panel. Then, check if the TPM is functional by selecting "Get TPM Capability (variable)". TPM variable parameters can now be displayed.  
 
+```
+'tpm2_startup -c' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+TPM2_PT_PERMANENT:
+  ownerAuthSet:              0
+  endorsementAuthSet:        0
+  lockoutAuthSet:            0
+  reserved1:                 0
+  disableClear:              0
+  inLockout:                 0
+  tpmGeneratedEPS:           1
+  reserved2:                 0
+TPM2_PT_STARTUP_CLEAR:
+  phEnable:                  1
+  shEnable:                  1
+  ehEnable:                  1
+  phEnableNV:                1
+  reserved1:                 0
+  orderly:                   0
+TPM2_PT_HR_NV_INDEX: 0x3
+TPM2_PT_HR_LOADED: 0x0
+TPM2_PT_HR_LOADED_AVAIL: 0x3
+TPM2_PT_HR_ACTIVE: 0x0
+TPM2_PT_HR_ACTIVE_AVAIL: 0x40
+TPM2_PT_HR_TRANSIENT_AVAIL: 0x3
+TPM2_PT_HR_PERSISTENT: 0x0
+TPM2_PT_HR_PERSISTENT_AVAIL: 0x8
+```
+
+Expected Output (Partial): Display TPM capability (variable) successfully after TPM2_startup
 
 
 ### Viewing TPM (fixed) Capabilities
 
 The TPM capabilities (fixed) can be displayed using tpm2_getcap properties-fixed in TPM2 tools. The fixed capabilities shows important information such as the TPM vendor and the firmware version. It also displays the manufacturer as well as many other information.
 
-To view fixed capabilities and details, select "Get TPM Capability (fixed)". 
+To view fixed capabilities and details, select "Get TPM Capability (fixed)" button. Information such as the manufacturer, firmware and more can be found here. 
 
-| ![](images/Optiga_Setup/Setup/TPM_GetFixed.png) |
-| ------------------------------------------------ |
+```
+TPM2_PT_FAMILY_INDICATOR:
+  raw: 0x322E3000
+  value: "2.0"
+TPM2_PT_LEVEL:
+  raw: 0
+TPM2_PT_REVISION:
+  raw: 0x9F
+  value: 1.59
+TPM2_PT_DAY_OF_YEAR:
+  raw: 0xAA
+TPM2_PT_YEAR:
+  raw: 0x7E4
+TPM2_PT_MANUFACTURER:
+  raw: 0x49465800
+  value: "IFX"
+TPM2_PT_VENDOR_STRING_1:
+  raw: 0x534C4239
+  value: "SLB9"
+TPM2_PT_VENDOR_STRING_2:
+  raw: 0x36373200
+  value: "672"
+TPM2_PT_VENDOR_STRING_3:
+  raw: 0x0
+  value: ""
+TPM2_PT_VENDOR_STRING_4:
+  raw: 0x0
+  value: ""
+```
 
-Figure 8: Setup Menu Select Get TPM capability (fixed)
-
-Information such as the manufacturer, firmware and more can be found here.  
-
-| ![](images/Optiga_Setup/Setup//Setup_Unedited/SetAuthSuccessCheckTPMFixed.png) |
-| ------------------------------------------------------------ |
-
-Figure 9: Setup Menu display Get TPM capability (fixed)
-
+Expected Output (Partial): Setup Menu display Get TPM capability (fixed)
 
 
 ### Changing Authorization values of TPM
 
-First, perform a "TPM Clear" at (1) so that the TPM will be reconfigured to default mode. Then select "Get TPM capability (variable)" at (2) to display default TPM variable parameters. When the owner, endorsement and lockout authorization values are not changed, the variable value should be '0'.
-
 **WARNING:** Performing a TPM Clear will result in the reset of the TPM.
 
-| ![](images/Optiga_Setup/Setup/PlatformClear2.png) |
-| -------------------------------------------------- |
+First, perform a "TPM Clear" by selecting the corresponding button in the left panel so that the TPM will be reconfigured to default mode. Then select "Get TPM capability (variable)" to display default TPM variable parameters. When the owner, endorsement and lockout authorization values are not changed, the variable value should be '0'.
 
-Figure 10: Display default TPM capability(variable) after reset back to default mode
+```
+TPM2_PT_PERMANENT:
+  ownerAuthSet:              0
+  endorsementAuthSet:        0
+  lockoutAuthSet:            0
+```
 
-To change the lockout, endorsement, and owner authorization values of TPM, select "Change Auth".  
+Expected Output (Partial): After resetting to default mode, the owner, endorsement, and lockout authorization values should all be zero.
 
-| ![](images/Optiga_Setup/Setup/TPM_ChangeAuth.png) |
-| -------------------------------------------------- |
 
-Figure 11: Take TPM ownership by configuring the authorization values for TPM to be used first time or after reset the TPM to default mode
-
-Select "SET ALL" to confirm the credentials. In this example, we will use the default values already given. 
+To change the lockout, endorsement, and owner authorization values of TPM, select "Change Auth" in the left panel.  In the pop-up dialog, click "SET ALL" to confirm the credentials. We’ll use the following values as an example.
 
 | ![](images/Optiga_Setup/Setup/SetAuthScreen.png) |
-| ------------------------------------------------- |
+| ------------------------------------------------ |
 
-Figure 12: Configure authorization values
+Figure 5: Configure authorization values in the pop-up dialog
 
 Once successful, select "Get TPM capability (variable)" to confirm the results. The first 3 AuthSet values should be 1 once the owner, endorsement and lockout authorization value values are set. 
 
-| ![](images/Optiga_Setup/Setup/SetAuthSuccessCheckTPMVari.png) |
-| ------------------------------------------------------------ |
+```
+TPM2_PT_PERMANENT:
+  ownerAuthSet:              1
+  endorsementAuthSet:        1
+  lockoutAuthSet:            1
+```
 
-Figure 13: Display TPM capability (variable) to confirm if the authorization values are set
+Expected Output (Partial): If the owner, endorsement, and lockout authorization values are all set, the corresponding AuthSet values should all be one.
 
 
 
 ### Dictionary Attack
 
-Select "Dictionary Attack Settings" to configure settings for dictionary attacks.
-
-| ![](images/Optiga_Setup/Setup/Dictionaryattacksel.png) |
-| ------------------------------------------------------- |
-
-Figure 14: Setup Menu Select Dictionary Attack Settings
-
-Configure the dictionary attack settings and select "OK" to confirm. You can change the number of attempts before lockout, the time taken for recovery from failure and lockout recovery.
+Select "Dictionary Attack Settings" in the left panel to configure settings for dictionary attacks. In the pop-up dialog, configure the dictionary attack settings and select "OK" to confirm. You can change the number of attempts before lockout, the time taken for recovery from failure and lockout recovery.
 
 | ![](images/Optiga_Setup/Setup/DictionaryAttackSettings.png) |
-| ------------------------------------------------------------ |
+| ----------------------------------------------------------- |
 
-Figure 15: Dictionary Attack Settings Configuration
+Figure 6: Dictionary Attack Settings Configuration
 
-Dictionary Attack Settings should be successfully configured.
 
-| ![](images/Optiga_Setup/Setup//Setup_Unedited/DictionaryAttackSettingsSuccess.png) |
-| ------------------------------------------------------------ |
+If the Dictionary Attack Settings are successfully configured, the three following values will be changed accordingly when selecting "Get TPM capability (Variable)".
 
-Figure 16: Dictionary Attack Settings Successfully Configured shown on TPM Capability (Variable)
+```
+TPM2_PT_MAX_AUTH_FAIL: 0x20
+TPM2_PT_LOCKOUT_INTERVAL: 0x1C20
+TPM2_PT_LOCKOUT_RECOVERY: 0x15180
+```
+
+Expected Output (Partial): Dictionary Attack Settings Successfully Configured shown on TPM Capability (Variable)
 
 
 
@@ -275,37 +320,38 @@ Figure 16: Dictionary Attack Settings Successfully Configured shown on TPM Capab
 
 The TPM ClearLock in TPM2 tools will effectively block/unblock lockout authorization handle for issuing TPM clear. This is to prevent TPM reset to default mode.
 
-To disable 'tpm2_clear' command, select "Disable Clear ON" at (1). Then, select "Platform Clear" at (2). It should fail.
+To disable 'tpm2_clear' command, select "TPM Clear Enable" in the left panel. Then, select "TPM Clear". It should fail.
 
-| ![](images/Optiga_Setup/Setup/PlatformClearON.png) |
-| --------------------------------------------------- |
+```
+'tpm2_clearcontrol -C l s -P 1' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+WARNING:esys:src/tss2-esys/api/Esys_Clear.c:291:Esys_Clear_Finish() Received TPM Error 
+ERROR:esys:src/tss2-esys/api/Esys_Clear.c:97:Esys_Clear() Esys Finish ErrorCode (0x00000120) 
+ERROR: Esys_Clear(0x120) - tpm:error(2.0): the command is disabled
+ERROR: Unable to run tpm2_clear
+'tpm2_clear -c p' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
 
-Figure 17: TPM Clearlock Disable Clear On Succeeded
+Expected Output: TPM Clearlock successfully enabled
 
-To re-enable "Platform Clear", select "Disable Clear OFF" at (1) to disable clearlock. Then, perform a "Platform Clear" at (2) and check variable using "Get TPM capability (variable)" at (3). AuthSet should be successfully cleared.
+To re-enable "TPM Clear", select "TPM Clear Enable" in the left panel to disable clearlock. Then, perform a "TPM Clear" and check variable using "Get TPM capability (variable)" . AuthSet should be successfully cleared.
 
-| ![](images/Optiga_Setup/Setup/PlatformDisableClearOffSucess.png) |
-| ------------------------------------------------------------ |
+```
+TPM2_PT_PERMANENT:
+  ownerAuthSet:              1
+  endorsementAuthSet:        1
+  lockoutAuthSet:            1
+```
 
-Figure 18: TPM Clearlock Disable Clear Off succeeded
-
+Expected Output (Partial):  TPM Clearlock successfully disabled
 
 
 ## Platform Configuration Registers
 
 This section shows you the functionalities of the PCR in the OPTIGA™ TPM.
 
-From the "Setup and Basic Features" menu, select the "Platform Confiuguration Registers".
-
-| ![](images/Optiga_Setup/PCR/SelectPCR.png) |
-| ------------------------------------------- |
-
-Figure 19: Platform Configuration Registers Selection
-
-| ![](images/Optiga_Setup/PCR/PCR_Unedited/TPMPCRScreen.png) |
-| ----------------------------------------------------------- |
-
-Figure 20: Platform Configuration Registers Menu
+From the "Setup and Basic Features" menu, select the "Platform Configuration Registers".
 
 
 
@@ -314,52 +360,101 @@ Figure 20: Platform Configuration Registers Menu
 Platform Configuration Register function descriptions
 
 | ![](images/Optiga_Setup/PCR/TPMPCRScreen.png) |
-| ---------------------------------------------- |
+| --------------------------------------------- |
 
-Figure 21: OPTIGA™ TPM Platform Configuration Registers Functions Descriptions
-
+Figure 7: OPTIGA™ TPM Platform Configuration Registers Functions Descriptions
 
 
 ### PCR Listing
 
-To list all 24 PCRs in SHA-256, ensure that the checkbox at (1) is **checked** and select "PCR List All" at (2).
 
-| ![](images/Optiga_Setup/PCR/TPMPCRSHA256_ListAll.png) |
-| ------------------------------------------------------ |
+To list all 24 PCRs using SHA-1/SHA-256/SHA-384, select the corresponding bank name from the dropdown at the top (SHA-1 as the default setting). A pop-up dialog will then be shown. Press the "RESET" button on the TPM to apply the change and select "Reset Pressed" in the dialog. Once done,  click 'PCR List All'.
 
-Figure 22: PCR List All 24 Registers in SHA-256
+| ![](images/Optiga_Setup/PCR/TPMPCR_POPUP.png) |
+| --------------------------------------------- |
 
-To list all 24 PCRs in SHA-1, ensure that the checkbox at (1) is **unchecked** and select "PCR List All" at (2).  
+Figure 8: PCR List All 24 Registers in SHA-256
 
-| ![](images/Optiga_Setup/PCR/TPMPCRSHA1_ListAll.png) |
-| ---------------------------------------------------- |
 
-Figure 23: PCR List All 24 Registers in SHA-1
+```
+'tpm2_pcrallocate sha1:all+sha256:none' executed
+'tpm2_startup --clear' executed
+  sha256:
+    0 : 0x0000000000000000000000000000000000000000000000000000000000000000
+    1 : 0x0000000000000000000000000000000000000000000000000000000000000000
+    2 : 0x0000000000000000000000000000000000000000000000000000000000000000
+    3 : 0x0000000000000000000000000000000000000000000000000000000000000000
+    ......
+    17: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+    18: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+    19: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+    20: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+    ......
+    23: 0x0000000000000000000000000000000000000000000000000000000000000000
+'tpm2_pcrread shaxxx' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
 
-To list only a specific register out of the 24, we can first choose PCR index at (1). Then select "PCR List" at (2) to display the chosen PCR index. You can also check or uncheck the SHA-256/SHA-1 at (3) as shown below in Figure 24.
+Expected Output: PCR List All 24 Registers in SHA-256 as an example
 
-| ![](images/Optiga_Setup/PCR/TPMPCR_ListSpecific.png) |
-| ----------------------------------------------------- |
 
-Figure 24: PCR List Specific Register in SHA-1 and SHA-256
+To view a specific register from the 24 available, first select a PCR index from the list at the top. Then, click the "PCR List" button to display the corresponding PCR value. You can also switch between SHA-1, SHA-256, and SHA-384 by using the dropdown menu at the top.
+
+
+```
+  sha1:
+    1 : 0x0000000000000000000000000000000000000000
+'tpm2_pcrread' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+'tpm2_pcrallocate sha1:none+sha256:all' executed
+'tpm2_startup --clear' executed
+  sha256:
+    1 : 0x0000000000000000000000000000000000000000000000000000000000000000
+'tpm2_pcrread' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+  sha256:
+    20: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+'tpm2_pcrread' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+
+```
+
+Expected Output: Examples of PCR listing specific register in SHA-1 and SHA-256
 
 
 
 ### PCR Extend and PCR Event
 
-To perform a PCR Extend, enter an input in the "Input for PCR operations" below and select "PCR Extend". In this example, the default input of "0123456789ABCDEF" is used. Only the bank selected will be extended. 
+To perform a PCR Extend, enter an input in the "Input for PCR operations" and select "PCR Extend". In this example, the default input of "0123456789ABCDEF" is used. Only the PCR bank selected will be extended. 
 
-| ![](images/Optiga_Setup/PCR/TPMPCR_Extend.png) |
-| ----------------------------------------------- |
+```
+sha256:
+    0 : 0x0000000000000000000000000000000000000000000000000000000000000000
+'tpm2_pcrread' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+Input= 123456789abcdef0000000000000000000000000000000000000000000000000
+'tpm2_pcrextend' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+  sha256:
+    0 : 0x464D25FC35AC43941106533AC8C27A2E3AA4A4DE26D70A15A1BF85193BBA9349
+'tpm2_pcrread' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
 
-Figure 25: PCR Extend function
+Expected Output: PCR Extend function in SHA256
 
-To perform a PCR Event, enter an input in the "Input for PCR operations" below and select "PCR Event". In this example, the default input of "0123456789ABCDEF" is used. Both banks SHA-256 and SHA-1 will be extended as shown in Figure 26.
 
-| ![](images/Optiga_Setup/PCR/ed1.png) |
-| ------------------------------------- |
+To perform a PCR Event, enter a value in the "Input for PCR operations" field and select the "PCR Event" option. In this example, the default input "0123456789ABCDEF" is used. All PCR banks—SHA-1, SHA-256, and SHA-384—will be extended accordingly, as shown below.
 
-Figure 26: PCR Event function
+```
+sha1: ce27cb141098feb00714e758646be3e99c185b71
+sha256: 2125b2c332b1113aae9bfc5e9f7e3b4c91d828cb942c2df1eeb02502eccae9e9
+sha384: 4d9f86403277358dbfd9250a5e7538a545b57404e69594238ab6d95a727788aac005cdf3e88ee26d5d2fa68e72e6d497
+'tpm2_pcrevent' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
+
+Expected Output: PCR Event function
 
 
 
@@ -369,122 +464,242 @@ This section shows you the functionalities of the NVM and Certificate Management
 
 From the "Setup and Basic Features" menu, select the "NVM and Certificate Management".
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_Screen.png) |
-| ----------------------------------------------- |
-
-Figure 27: NVM and Certificate Management Selection
-
-| ![](images/Optiga_Setup/NVM/NVM_Unedited/TPMNVM_Define.png) |
-| ------------------------------------------------------------ |
-
-Figure 28: NVM and Certificate Management Screen
-
 
 
 ### NVM and Certificate Management Functions
 
 NVM and Certificate Management function descriptions
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_Screen2.png) |
-| ------------------------------------------------ |
+| ![](images/Optiga_Setup/NVM/TPMNVM_Screen.png) |
+| ---------------------------------------------- |
 
-Figure 29: OPTIGA™ TPM NVM and Certificate Management Functions Descriptions
+Figure 9: OPTIGA™ TPM NVM and Certificate Management Functions Descriptions
 
-
+ 
 
 ### NV Define
 
-Select the NVM attributes and input the NVM index and size. Then select "NV Define" at (1). Then select "NV List" at (2) to check that NVM index 0x1500016 has been defined. Default attrbutes are used in this example.
+Select the necessary NVM attributes, then enter the NVM index and size. By default, the owner authorization field is empty. If it was configured earlier in the "Setup" section, the corresponding value will automatically appear in the input field. For NV authorization, you may either leave the field blank or enter a value to set it manually. Click "NV Define", then "NV List" to verify that NVM index 0x1500016 has been successfully defined. This example uses the default attribute settings.
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_ScreenSelectdefine.png) |
-| ----------------------------------------------------------- |
+After selecting "NV List", all defined NVM indexes will be shown. NVM index 0x1500016 has been defined as shown below. In the box, Index 0x1c00002, 0x1c0000a and 0x1c00016 are Infineon EK certificates respectively and **should not** be edited.  
 
-Figure 30: NV Define and NV List Selection
+```
+Attributes are: ownerwrite|authwrite|ownerread|authread|read_stclear
+nv-index: 0x1500016
+'tpm2_nvdefine' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+0x1500016:
+  name: 000b3582222e04749fb48f14a4f563f6d948c61318941f16d16383191b33e95fb261
+  hash algorithm:
+    friendly: sha256
+    value: 0xB
+  attributes:
+    friendly: ownerwrite|authwrite|ownerread|authread|read_stclear
+    value: 0x80060006
+  size: 900
 
-After selecting "NV List", all defined NVM indexs are shown as seen in Figure 31. NVM index 0x1500016 has been defined as shown by the arrow. In the box, Index 0x1c00002 as well as 0x1c0000a are Infineon EK certificates respectively and **should not** be edited.  
+0x1c00002:
+  name: 000bd91c8df868461c4d4fa966578da6d1fc64b486753d1d9dfb59bf3ee6387224bf
+  hash algorithm:
+    friendly: sha256
+    value: 0xB
+  attributes:
+    friendly: ppwrite|writedefine|ppread|ownerread|authread|no_da|written|platformcreate
+    value: 0x62072001
+  size: 1429
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_List.png) |
-| --------------------------------------------- |
+0x1c0000a:
+  name: 000bbf3b11b0e5ff0784f3a3741e5a593b5db538f7e9fde75551692fab30840323b6
+  hash algorithm:
+    friendly: sha256
+    value: 0xB
+  attributes:
+    friendly: ppwrite|writedefine|ppread|ownerread|authread|no_da|written|platformcreate
+    value: 0x62072001
+  size: 846
 
-Figure 31: NV List Display
+0x1c00016:
+  name: 000b046b18cf41cf4661193a87480ab93ca379ca625b303170858a302b4573727204
+  hash algorithm:
+    friendly: sha256
+    value: 0xB
+  attributes:
+    friendly: ppwrite|writedefine|ppread|ownerread|authread|no_da|written|platformcreate
+    value: 0x62072001
+  size: 874
+
+'tpm2_nvreadpublic' executed 
+```
+
+Expected Output: NV List Display
 
 
 
 ### NV Write
 
-To write in the NV, enter what you wish to input in the NV in the "NVM data". Then select "NV Write" at (1) to write and "NV Read" at (2) to see what you have written.
+To write in the NV, enter what you wish to input in the NV in the "NVM data". Then select "NV Write" to write and "NV Read" to see what you have written.
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_WritenRead2.png) |
-| ---------------------------------------------------- |
+```
+'tpm2_nvwrite' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+00000000: 4865 6c6c 6f20 576f 726c 6421 0000 0000  Hello World!....
+00000010: 0000 0000 0000 0000 0000 0000 0000 0000  ................
 
-Figure 32: NV Write and NV Read display
+'tpm2_nvread' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
+
+Expected Output: NV Write and NV Read display
 
 
 
-### Reading Cerificiate
+### Reading Certificate
 
 The "ifx_ecc_cert.crt" and the "ifx_rsa_cert.crt" will be created during "Read RSA Cert" and "Read ECC Cert" process. These are the EK Certificates that are inside handles 0x1c00002 and 0x1c0000a respectively.
 
 To read RSA Cert in the NV, ensure that the RSA Cert index is correct and select "Read RSA Cert". In this example, we read the Infineon EK certificate "0x1c00002". A "ifx_rsa_cert.crt" will be created during "Read RSA Cert" process.
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_ReadRSA.png) |
-| ------------------------------------------------ |
 
-Figure 33: Read RSA Cert
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 190513399 (0xb5b00f7)
+        Signature Algorithm: sha384WithRSAEncryption
+        Issuer: C = DE, O = Infineon Technologies AG, OU = OPTIGA(TM), CN = Infineon OPTIGA(TM) TPM 2.0 RSA CA 056
+        Validity
+            Not Before: Jul  4 16:41:34 2021 GMT
+            Not After : Jul  4 16:41:34 2036 GMT
+        Subject: 
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:ca:2f:cf:35:a8:95:e2:ff:5c:a4:10:b5:10:ec:
+                    ae:96:5d:6e:e8:be:f4:8f:f1:28:e6:fc:82:68:3f:
+                    ......
+
+```
+
+
+Expected Output: Example of reading RSA Cert
+
 
 To read ECC Cert in the NV, ensure that the ECC Cert index is correct and select "Read ECC Cert". In this example, we read the Infineon EK certificate "0x1c0000a". A "ifx_ecc_cert.crt" will be created during "Read ECC Cert" process.
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_ReadECC.png) |
-| ------------------------------------------------ |
 
-Figure 34: Read ECC Cert
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 708618584 (0x2a3ca958)
+        Signature Algorithm: ecdsa-with-SHA512
+        Issuer: C = DE, O = Infineon Technologies AG, OU = OPTIGA(TM), CN = Infineon OPTIGA(TM) TPM 2.0 ECC CA 056
+        Validity
+            Not Before: Jul  4 16:40:24 2021 GMT
+            Not After : Jul  4 16:40:24 2036 GMT
+        Subject: 
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:b9:56:51:85:c8:34:f5:86:6b:46:cd:ad:53:3b:
+                    3f:84:40:9e:0a:5c:f1:57:44:7f:a1:9e:c4:f0:ad:
+                    4b:bb:40:a7:21:e6:8b:cc:33:31:57:aa:4c:56:5e:
+					......
+```
+
+
+Expected Output: Example of reading ECC Cert
 
 
 
 ### Writing File
 
-To write file, select the file name box as follow.
+To write a file, click the file name field, which defaults to "ifx_ecc_cert.crt". After selecting the desired file, the file path will be automatically updated. In this example, a local ifx_ecc_cert.crt file is selected and NVM index 0x1500016 is used. Click "NV Write File" to write the selected file to this index.
 
-| ![](images/Optiga_Setup/NVM/Write_cert.png) |
-| -------------------------------------------- |
+To verify the operation, input appropriate read size and click "NV Read" to read the file you have just written.
 
-Figure 35: NV Write File
+```
+'tpm2_nvwrite' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+00000000: 3082 034a 3082 02ab a003 0201 0202 042a  0..J0..........*
+00000010: 3ca9 5830 0a06 082a 8648 ce3d 0403 0430  <.X0...*.H.=...0
+00000020: 7631 0b30 0906 0355 0406 1302 4445 3121  v1.0...U....DE1!
+00000030: 301f 0603 5504 0a0c 1849 6e66 696e 656f  0...U....Infineo
+00000040: 6e20 5465 6368 6e6f 6c6f 6769 6573 2041  n Technologies A
+00000050: 4731 1330 1106 0355 040b 0c0a 4f50 5449  G1.0...U....OPTI
+00000060: 4741 2854 4d29 312f 302d 0603 5504 030c  GA(TM)1/0-..U...
+00000070: 2649 6e66 696e 656f 6e20 4f50 5449 4741  &Infineon OPTIGA
+00000080: 2854 4d29 2054 504d 2032 2e30 2045 4343  (TM) TPM 2.0 ECC
+00000090: 2043 4120 3035 3630 1e17 0d32 3130 3730   CA 0560...21070
+......
 
-For this example, ifx_ecc_cert.crt is selected. Click the "NV Write File" button to write the file to index 0x1500016.
+'tpm2_nvread' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_WriteFile.png) |
-| -------------------------------------------------- |
 
-Figure 36: NV Write File Selection
+Expected Output (Partial): Reading NV Written file
 
-The path for the file to be written should be updated. Select "NV Read" to read the file that you have written in.  
+As an ECC cert was written, we can also use "Read ECC Cert" by entering the corresponding NVM index (0x1500016 in this example) to show the certificate in the proper format.  
 
-| ![](images/Optiga_Setup/NVM/TPMNVM_WriteFileSuccess.png) |
-| --------------------------------------------------------- |
 
-Figure 37: Reading NV Written file
-
-As an ecc cert was written, we can also use "Read ECC Cert" to show the certificate in the proper format.  
-
-| ![](images/Optiga_Setup/NVM/TPMNVM_WriteFileSuccessInterpreted.png) |
-| ------------------------------------------------------------ |
-
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 708618584 (0x2a3ca958)
+        Signature Algorithm: ecdsa-with-SHA512
+        Issuer: C = DE, O = Infineon Technologies AG, OU = OPTIGA(TM), CN = Infineon OPTIGA(TM) TPM 2.0 ECC CA 056
+        Validity
+            Not Before: Jul  4 16:40:24 2021 GMT
+            Not After : Jul  4 16:40:24 2036 GMT
+        Subject: 
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:b9:56:51:85:c8:34:f5:86:6b:46:cd:ad:53:3b:
+                    3f:84:40:9e:0a:5c:f1:57:44:7f:a1:9e:c4:f0:ad:
+                    4b:bb:40:a7:21:e6:8b:cc:33:31:57:aa:4c:56:5e:
+					......
+```
 Figure 38: Reading NV written file using Read ECC Cert
 
 
 
 ### NV Release
 
-To delete an NV index, select "NV Release" at (1). Select "NV List" at (2) to ensure that it is a success. 0x1500016 should be released.
-
-| ![](images/Optiga_Setup/NVM/TPMNVM_ReleaseSuccess.png) |
-| ------------------------------------------------------- |
-
-Figure 39: NV Release and NV List default
+To delete an NV index, select "NV Release". Select "NV List" to ensure that it is a success. 0x1500016 should be released.
 
 
+```
+++++++++++++++++++++++++++++++++++++++++++++
+'tpm2_nvrelease' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+0x1c00002:
+  name: 000bd91c8df868461c4d4fa966578da6d1fc64b486753d1d9dfb59bf3ee6387224bf
+  ......
 
-## Handle Mangement
+0x1c0000a:
+  name: 000bbf3b11b0e5ff0784f3a3741e5a593b5db538f7e9fde75551692fab30840323b6
+  ......
+  
+0x1c00016:
+  name: 000b046b18cf41cf4661193a87480ab93ca379ca625b303170858a302b4573727204
+  ......
+
+'tpm2_nvreadpublic' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
+
+
+Expected Output (Partial): NV Release and NV List default
+
+
+
+## Handle Management
 
 This section shows you the functionalities of Handle Management in the OPTIGA™ TPM. The handle management is used to manage all persistent and transient keys in the OPTIGA™ TPM. It is necessary as there is a limit of 3 transient and 7 persistent keys. Hence, handle management can evict persistent keys or flush transient keys to make for more transient and persistent keys.
 
@@ -493,80 +708,72 @@ This section shows you the functionalities of Handle Management in the OPTIGA™
 Handle Management function descriptions.
 
 | ![](images/Optiga_Setup/Handle_Management/TPMHM_MainScreen.png) |
-| ------------------------------------------------------------ |
+| --------------------------------------------------------------- |
 
-Figure 40: OPTIGA™ TPM Handle Management Functions Descriptions
+Figure 10: OPTIGA™ TPM Handle Management Functions Descriptions
 
 
 
 ### Handle Management List All
 
-From the "Setup and Basic Features" menu, select the "Handle Management".
 
-| ![](images/Optiga_Setup/Handle_Management/TPM_SetupScreen.png) |
-| ------------------------------------------------------------ |
+Select "List All" to list all persistent handles. All persistent handles will be listed. You should have no persistent handles shown. Refer to **3.3.2** in order to create a persistent handle. Section 3.3.2 creates a Primary Key which in its process makes the handle 0x81000006 persisted. Once done, it will be listed when selecting the handle management "List all" button.
 
-Figure 41: Handle Management Selection
 
-| ![](images/Optiga_Setup/Handle_Management/HM_Undedited/HM_Main_screen.png) |
-| ------------------------------------------------------------ |
+```
+- 0x81000006
+'tpm2_getcap handles-persistent' executed 
+++++++++++++++++++++++++++++++++++++++++++++
 
-Figure 42: Handle Management Screen
+```
 
-Select "List All" to list all persistent handles.
+Input a persisted handle (0x81000006 as an example here) and select "Read Persistent" to see the information of the persistent handle selected.  The information of the persistent handle will shown on the display.
 
-| ![](images/Optiga_Setup/Handle_Management/TPMHM_LIST.png) |
-| ---------------------------------------------------------- |
+```
+name: 000bba84e5c944b7fc4d96a7edee44924afd0857e0ce1b1811bc552102fb89b0e983
+qualified name: 000be59e818092815f8cc6d4ad9e8c13b0d23c195a1a3235e7629c15380063817dd7
+name-alg:
+  value: sha256
+  raw: 0xb
+attributes:
+  value: fixedtpm|fixedparent|sensitivedataorigin|userwithauth|restricted|decrypt
+  raw: 0x30072
+type:
+  value: ecc
+  raw: 0x23
+......
+  value: cfb
+  raw: 0x43
+sym-keybits: 128
+x: 323e75f8b0fa4d7576329c6a0c1f656b8ec478c80af3badc544e1ff662ef47f9
+y: f9f9f5eea71c1bd5380489d19c807e32d677f1db32e35245159d137b2a0c2b11
+'tpm2_readpublic -c 0x81000006' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
 
-Figure 43: Handle Management List All Selection
 
-All persistent handles will be listed. You should have no persistent handles shown. Refer to **3.3.2** in order to create a persistent handle. Section 3.3.2 creates a Primary Key which in its process makes the handle 0x81000006 persisted. Once done, it will be listed when selecting the handle management "List all" button.
-
-| ![](images/Optiga_Setup/Handle_Management/HM_Undedited/TPMHM_ListAll.png) |
-| ------------------------------------------------------------ |
-
-Figure 44: Handle Management List All Display
-
-Input a persisted handle and select "Read Persistent" to see the information of the persistent handle selected.  
-
-| ![](images/Optiga_Setup/Handle_Management/TPMHM_Read.png) |
-| ---------------------------------------------------------- |
-
-Figure 45: Handle Management Read Persistent Selection
-
-The information of the persistent handle will shown on the display.
-
-| ![](images/Optiga_Setup/Handle_Management/TPMHM_ReadPersistent.png) |
-| ------------------------------------------------------------ |
-
-Figure 46: Handle Management Read Persistent Display
+Expected Output (Partial): Handle Management Read Persistent Display
 
 
 
 ### Handle Management Evict Persistent
 
-Once a persistent handle is created under section 3.3.2, the persistent handle 0x81000006 can be evicted to make space for more persistent handles.
+Once a persistent handle is created under section 3.3.2 (0x81000006 as an example here), the persistent handle 0x81000006 can be evicted to make space for more persistent handles.
 
-To evict persistent, input the correct handle value and select "Evict persistent".
+To evict persistent, input the correct handle value and select "Evict persistent". Once executed, the persistent handle "0x81000006" should be evicted as shown below.
 
-| ![](images/Optiga_Setup/Handle_Management/TPMHM_Evict.png) |
-| ----------------------------------------------------------- |
 
-Figure 47: Handle Management Evict Persistent Selection
+```
+persistent-handle: 0x81000006
+action: evicted
+'tpm2_evictcontrol -C o -c 0x81000006 -P ' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+'tpm2_getcap handles-persistent' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+```
 
-Enter the set value of the Owner Authorization Value and select "OK" to evict persistent key selected.
 
-| ![](images/Optiga_Setup/Handle_Management/TPMHM_EvictPersistentHandle_OAV.png) |
-| ------------------------------------------------------------ |
-
-Figure 48: Owner Authorization confirmation for evicting persistent handle
-
-Once executed, the persistent handle "0x81000006" should be evicted as seen from Figure 49.
-
-| ![](images/Optiga_Setup/Handle_Management/TPMHM_EvictPersistentHandle.png) |
-| ------------------------------------------------------------ |
-
-Figure 49: Handle Management Evict Persistent List All Screen
+Expected Output: Handle Management Evict Persistent List All Screen
 
 
 
@@ -1661,6 +1868,12 @@ Figure 168: AWS IOT WebBrowser Successfully Published
 3.  <http://www.infineon.com/tpm>
 4.  https://trustedcomputinggroup.org/resource/tpm-main-specification/
 5. <https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/>
+
+
+
+
+
+
 
 
 
