@@ -90,21 +90,19 @@ Using this tool, you can instantly experience the benefits that [OPTIGA™ TPM 2
 -   Resets back to default settings
 -   Manages the authorization values for the owner, endorsement and lockout
 -   Manages OPTIGA™ TPM 2.0 NV memory for creating, deleting, reading, writing, listing, etc.
--   Handles PCR indexes by listing all the different registers in SHA-1 or SHA-256
--   Handles PCR indexes by extending a value to the registers in SHA-1 or SHA-256 using PCR Extend/Event
+-   Handles PCR indexes by listing all the different registers in SHA-1 or SHA-256 or SHA-384
+-   Handles PCR indexes by extending a value to the registers in SHA-1 or SHA-256 or SHA-384 using PCR Extend/Event
 -   Manages specific handles and contexts associated with transient and persistent objects
 -   Configures dictionary attack settings such as the number of attempts before lockout as well as the time required for recovery from failure and from lockout
--   Creates RSA-2048 and ECC-P256 primary and secondary keys under storage hierarchy without supporting endorsement and platform hierarchy
+-   Creates RSA-2048 and ECC-P256 primary and secondary keys under storage hierarchy
 -   Encrypts and decrypts data using RSA-2048
 -   Signs and verifies data with RSA-2048 and ECC-P256
+-   Data seal and unseal with policy 
+-   Attestation with Endorsement Key
+-   ECC and RSA cryptographic operations using OpenSSL provider 
+-   Secured TLS communications with OpenSSL provider
 
-## Use cases
 
--   Data sealing with policy
--   Remote attestation
--   Cryptographic operations using OpenSSL library
--   Secured communications with OpenSSL library
--   Device certificate provisioning and onboarding to AWS IoT Core
 
 ## Setup environment
 
