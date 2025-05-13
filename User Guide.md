@@ -170,10 +170,10 @@ Figure 4: OPTIGA™ TPM Setup Menu Function Descriptions
 
  ### <a name="tpm-startup"></a>TPM Startup
 
-The OPTIGA™ TPM will startup by issuing the TPM2_startup command using TPM2 tools when the RPI is powered on. However, if the reset button is pressed, the TPM2_startup command must be invoked separately by clicking on the "Startup" button before running any TPM command or operation. Otherwise, the error message will be displayed "WARNING:esys:src/tss2-esys/api/Esys_StartAuthSession.c:390:Esys_StartAuthSession_Finish() Received TPM Error" if the "Startup" button is not selected prior to "Get TPM Capability (variable)" button.  
+The OPTIGA™ TPM will startup when the RPI is powered on. However, if the reset button is pressed, the TPM2_startup command must be invoked separately by clicking on the "Startup" button before running any TPM command or operation. Otherwise, error message will be displayed for example if  "Get TPM Capability (variable)" button is selected as follow.  
 
 
-```
+```shell
 ERROR:esys:src/tss2-esys/api/Esys_GetCapability.c:307:Esys_GetCapability_Finish() Received a non-TPM Error 
 ERROR:esys:src/tss2-esys/api/Esys_GetCapability.c:107:Esys_GetCapability() Esys Finish ErrorCode (0x000a0008) 
 ERROR: Esys_GetCapability(0xA0008) - tcti:Fails to connect to next lower layer
@@ -187,7 +187,7 @@ Error Message: Display TPM capability (variable) failure due to reset without ru
 
 To startup the OPTIGA™ TPM, select the "Startup" button in the left panel. Then, check if the TPM is functional by selecting "Get TPM Capability (variable)". TPM variable parameters can now be displayed.  
 
-```
+```shell
 'tpm2_startup -c' executed 
 ++++++++++++++++++++++++++++++++++++++++++++
 TPM2_PT_PERMANENT:
@@ -277,7 +277,7 @@ Expected Output (Partial): After resetting to default mode, the owner, endorseme
 To change the lockout, endorsement, and owner authorization values of TPM, select "Change Auth" in the left panel.  In the pop-up dialog, click "SET ALL" to confirm the credentials. We’ll use the following values as an example.
 
 | ![](images/Optiga_Setup/Setup/SetAuthScreen.png) |
-| ------------------------------------------------ |
+| :----------------------------------------------: |
 
 Figure 5: Configure authorization values in the pop-up dialog
 
