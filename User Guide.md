@@ -23,7 +23,7 @@ This page helps you explore the tool to accelerate your learning about OPTIGA™
         - [2.3.1 NVM and Certificate Management Functions](#nvm-and-certificate-management-functions)
         - [2.3.2 NV Define](#nv-define)
         - [2.3.3 NV Write](#nv-write)
-        - [2.3.4 Reading Certificate](#reading-certificiate)
+        - [2.3.4 Reading Certificate](#reading-certificate)
         - [2.3.5 Writing File](#writing-file)
         - [2.3.6 NV Release](#nv-release)
     - [2.4 Handle Management](#handle-management)
@@ -47,9 +47,9 @@ This page helps you explore the tool to accelerate your learning about OPTIGA™
         - [4.1.1.1 RSA Encryption and Decryption](#rsa-encryption-and-decryption)
         - [4.1.1.2 RSA Signing and Verification](#rsa-signing-and-verification)
     - [4.2 ECC (Sign/Verify)](#ecc-signverify)
-        - [4.2.1 ECC (Sign/Verify) Function Description](#rsa-encdecsignverify-function-description)
+        - [4.2.1 ECC (Sign/Verify) Function Description](#ecc-signverify-function-description)
         - [4.1.1.1 ECC Keypair Generation](#ecc-keypair-generation)
-        - [4.2.1.2 ECC Signing and Verification](#rsa-signing-and-verification)
+        - [4.2.1.2 ECC Signing and Verification](#ecc-signing-and-verification)
     - [4.3 Random Number Generator](#random-number-generator)
     - [4.4 RSA (Client/Server)](#rsa-clientserver)
         - [4.4.1 RSA (Client/Server) Function Description](#rsa-clientserver-function-description)
@@ -74,11 +74,7 @@ This page helps you explore the tool to accelerate your learning about OPTIGA™
     - [6.2 Generating Quote](#generating-quote)
     - [6.3 Verifying Quote](#verifying-quote)
     - [6.4 Evict AK/EK Handle](#evict-akek-handle)
-7.  [Secured connection to AWS IoT core using TPM2.0](#secured-connection-to-aws-iot-core-using-tpm20)
-    - [7.1 Get started with AWS IoT Core](#get-started-with-aws-iot-core)
-    - [7.2 Create device certificate and assign it to Thing with policy](#create-device-certificate-and-assign-it-to-thing-with-policy)
-    - [7.3 Publish messages to AWS IoT core from the Raspberry Pi](#publish-messages-to-aws-iot-core-from-the-raspberry-pi)
-8.  [References](#references)
+7.  [References](#references)
 
 # Overview
 
@@ -112,37 +108,37 @@ Using this tool, you can instantly experience the benefits that [OPTIGA™ TPM 2
 
 For more information on how to setup the tool environment, refer to the [OPTIGA™ TPM 2.0 Explorer Setup Guide](./Setup%20Guide.md)
 
-This tool was tested on a Raspberry Pi (RPi) 3 Model B+/ RPi 4 Model B with Raspbian Linux in Release Version 11 (Bullseye) and kernel version 5.15.61 using an Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 attached to the Raspberry Pi board (Figure 1 and Figure 2).
+This tool was tested on a Raspberry Pi (RPi) 3 Model B+/ RPi 4 Model B with Debian Linux in Release Version 12 (Bookworm) and kernel version 6.6.51 using an Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 attached to the Raspberry Pi board (Figure 1 and Figure 2).
 
-![](images/Overview/RpiBullseye.png) 
+![](images/Overview/RpiBookworm.png) 
 
-Figure 1: Raspbian Linux 11 (Bullseye)
+Figure 1: Debian Linux 11 (Bookworm)
 
-| ![](images/Overview/TPMRPI3.png) |
+| ![](images/Overview/TPMRPI4.png) |
 | :------------------------------: |
 
-Figure 2: Infineon Iridium SLB 9670 TPM2.0 SPI Board on a Raspberry Pi 3
+Figure 2: Infineon OPTIGA™ TPM SLB 9642 RPI Evaluation Board on a Raspberry Pi 4
 
 
 
 **Table 1** shows a summary of the hardware and environment used.
 
-| Hardware             | Version   and Firmware/OS                                    | Comment                                                      |
-| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Host  PC             | Running Linux/Windows®, for example Ubuntu® 18.04 above or Windows 10 as long as VNC viewer is present | This  platform is used for interacting with  the Raspberry Pi® in a more convenient and faster way compared to doing all  actions directly on the Raspberry Pi®. |
-|  OPTIGA™ TPM 2.0 evaluation board       |  • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/)  | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®. |
-| Raspberry  Pi® Board | •  Model 3 B+/ 4 B, Bullseye OS (2022-09-26) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply | A SD  card with Raspberry Pi® Bullseye OS and kernel version 5.15.61 on it is required, which can be downloaded at [[1]](#references). This SD card will be  plugged in the developer PC |
+| Hardware                         | Version   and Firmware/OS                                                                                                                                                                                                                                   | Comment                                                                                                                                                                                 |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host  PC                         | Running Linux/Windows®, for example Ubuntu® 18.04 above or Windows 10 as long as VNC viewer is present                                                                                                                                                      | This  platform is used for interacting with  the Raspberry Pi® in a more convenient and faster way compared to doing all  actions directly on the Raspberry Pi®.                        |
+| OPTIGA™ TPM 2.0 evaluation board | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®.                                   |
+| Raspberry  Pi® Board             | •  Model 3 B+/ 4 B, Bookworm OS (2024-10-08) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply                                                                                                             | A SD  card with Raspberry Pi® Bookworm OS and kernel version 6.6.51 on it is required, which can be downloaded at [[1]](#references). This SD card will be  plugged in the developer PC |
 
 
 
 **Table 2** shows a summary of the software used.
 
-| Software        | Version    | Comment                                                      |
-| --------------- | ---------- | ------------------------------------------------------------ |
-| tpm2-tools      | 5.2        | https://github.com/tpm2-software/tpm2-tools Tag: ebd59ef827f1fc8e0efa43f9cade4d3d7efee59a |
-| tpm2-abrmd      | 2.4.1      | https://github.com/tpm2-software/tpm2-abrmd Tag: 71bfb9457267683e1f6a6dea42622442a62203a5 |
-| tpm2-tss        | 3.2.0      | https://github.com/tpm2-software/tpm2-tss Tag: e237e4d33cbf280292a480edd8ad061dcd3a37a2 |
-| tpm2-tss-engine | 1.1.0      | https://github.com/tpm2-software/tpm2-tss-engine Tag: 6f387a4efe2049f1b4833e8f621c77231bc1eef4 |
+| Software    | Version | Comment                                                                                   |
+| ----------- | ------- | ----------------------------------------------------------------------------------------- |
+| tpm2-tools  | 5.2     | https://github.com/tpm2-software/tpm2-tools Tag: ebd59ef827f1fc8e0efa43f9cade4d3d7efee59a |
+| tpm2-abrmd  | 2.4.1   | https://github.com/tpm2-software/tpm2-abrmd Tag: 71bfb9457267683e1f6a6dea42622442a62203a5 |
+| tpm2-tss    | 3.2.0   | https://github.com/tpm2-software/tpm2-tss Tag: e237e4d33cbf280292a480edd8ad061dcd3a37a2   |
+| tpm2-opnssl | 3.0.15  | https://github.com/openssl/openssl Tag: c523121f902fde2929909dc7f76b13ceb4961efe          |
 
 
 
@@ -214,8 +210,12 @@ TPM2_PT_HR_LOADED_AVAIL: 0x3
 TPM2_PT_HR_ACTIVE: 0x0
 TPM2_PT_HR_ACTIVE_AVAIL: 0x40
 TPM2_PT_HR_TRANSIENT_AVAIL: 0x3
-TPM2_PT_HR_PERSISTENT: 0x0
-TPM2_PT_HR_PERSISTENT_AVAIL: 0x8
+TPM2_PT_HR_PERSISTENT: 0x5
+TPM2_PT_HR_PERSISTENT_AVAIL: 0x3
+......
+'tpm2_getcap properties-variable' executed 
+++++++++++++++++++++++++++++++++++++++++++++
+
 ```
 
 Expected Output (Partial): Display TPM capability (variable) successfully after TPM2_startup
@@ -249,12 +249,9 @@ TPM2_PT_VENDOR_STRING_1:
 TPM2_PT_VENDOR_STRING_2:
   raw: 0x36373200
   value: "672"
-TPM2_PT_VENDOR_STRING_3:
-  raw: 0x0
-  value: ""
-TPM2_PT_VENDOR_STRING_4:
-  raw: 0x0
-  value: ""
+......
+'tpm2_getcap properties-fixed' executed 
+++++++++++++++++++++++++++++++++++++++++++++
 ```
 
 Expected Output (Partial): Setup Menu display Get TPM capability (fixed)
@@ -262,7 +259,8 @@ Expected Output (Partial): Setup Menu display Get TPM capability (fixed)
 
 ### Changing Authorization values of TPM
 
-**WARNING:** Performing a TPM Clear will result in the reset of the TPM.
+> [!Warning]
+> **WARNING:** Performing a TPM Clear will result in the reset of the TPM.
 
 First, perform a "TPM Clear" by selecting the corresponding button in the left panel so that the TPM will be reconfigured to default mode. Then select "Get TPM capability (variable)" to display default TPM variable parameters. When the owner, endorsement and lockout authorization values are not changed, the variable value should be '0'.
 
@@ -322,7 +320,7 @@ Expected Output (Partial): Dictionary Attack Settings Successfully Configured sh
 
 The TPM ClearLock in TPM2 tools will effectively block/unblock lockout authorization handle for issuing TPM clear. This is to prevent TPM reset to default mode.
 
-To disable 'tpm2_clear' command, select "TPM Clear Enable" in the left panel. Then, select "TPM Clear". It should fail.
+To disable 'tpm2_clear' command, select "TPM Clear Disable" in the left panel. Then, select "TPM Clear". It should fail.
 
 ```shell
 'tpm2_clearcontrol -C l s -P 1' executed 
@@ -335,19 +333,18 @@ ERROR: Unable to run tpm2_clear
 ++++++++++++++++++++++++++++++++++++++++++++
 ```
 
-Expected Output: TPM Clearlock successfully enabled
+Expected Output: TPM Clear Failed
 
-To re-enable "TPM Clear", select "TPM Clear Enable" in the left panel to disable clearlock. Then, perform a "TPM Clear" and check variable using "Get TPM capability (variable)" . AuthSet should be successfully cleared.
+To re-enable "TPM Clear", select "TPM Clear Enable" in the left panel. Then, perform a "TPM Clear" and check variable using "Get TPM capability (variable)" . AuthSet should be successfully cleared.
 
 ```shell
 TPM2_PT_PERMANENT:
-  ownerAuthSet:              1
-  endorsementAuthSet:        1
-  lockoutAuthSet:            1
+  ownerAuthSet:              0
+  endorsementAuthSet:        0
+  lockoutAuthSet:            0
 ```
 
-Expected Output (Partial):  TPM Clearlock successfully disabled
-
+Expected Output (Partial):  TPM Clear Succeed
 
 ## Platform Configuration Registers
 
@@ -397,7 +394,7 @@ Figure 8: PCR List All 24 Registers in SHA-256
 ++++++++++++++++++++++++++++++++++++++++++++
 ```
 
-Expected Output: PCR List All 24 Registers in SHA-256 as an example
+Expected Output (Partial): PCR List All 24 Registers in SHA-256 as an example
 
 
 To view a specific register from the 24 available, first select a PCR index from the list at the top. Then, click the "PCR List" button to display the corresponding PCR value. You can also switch between SHA-1, SHA-256, and SHA-384 by using the dropdown menu at the top.
@@ -426,7 +423,7 @@ Expected Output: Examples of PCR listing specific register in SHA-1 and SHA-256
 
 ### PCR Extend and PCR Event
 
-To perform a PCR Extend, enter an input in the "Input for PCR operations" and select "PCR Extend". In this example, the default input of "0123456789ABCDEF" is used. Only the PCR bank selected will be extended. 
+To perform a PCR Extend, enter an input in the "Input for PCR operations" and select "PCR Extend". In this example, the default input of "0123456789ABCDEF" is used. Only the PCR bank and index selected will be extended. 
 
 ```shell
 sha256:
@@ -583,7 +580,7 @@ Certificate:
 ```
 
 
-Expected Output: Example of reading RSA Cert
+Expected Output (Partial): Example of reading RSA Cert
 
 
 To read ECC Cert in the NV, ensure that the ECC Cert index is correct and select "Read ECC Cert". In this example, we read the Infineon EK certificate "0x1c0000a". A "ifx_ecc_cert.crt" will be created during "Read ECC Cert" process.
@@ -611,7 +608,7 @@ Certificate:
 ```
 
 
-Expected Output: Example of reading ECC Cert
+Expected Output  (Partial): Example of reading ECC Cert
 
 
 
@@ -666,7 +663,8 @@ Certificate:
                     4b:bb:40:a7:21:e6:8b:cc:33:31:57:aa:4c:56:5e:
 					......
 ```
-Figure 38: Reading NV written file using Read ECC Cert
+
+Expected Output (Partial): Reading NV written file using Read ECC Cert
 
 
 
@@ -1069,7 +1067,7 @@ Figure 13: ECC Cryptographic Function Description
 
 To create a ECC keypair, create a primary key first by selecting "Create Primary" to create primary key for ECC.
 
-If a persistent handle (0x81000006) is already in use, tpm2_evictcontrol may be used to evict the existing object from that handle. The command tpm2_createprimary will then be performed followed by a tpm2_evictcontrol to make it persistent using TPM2 tools as seen in Figure 77. The primary key is created with a parameter 'o' under the storage hierarchy.
+If a persistent handle (0x81000006) is already in use, tpm2_evictcontrol may be used to evict the existing object from that handle. The command tpm2_createprimary will then be performed followed by a tpm2_evictcontrol to make it persistent using TPM2 tools. The primary key is created with a parameter 'o' under the storage hierarchy.
 
 ```shell
 Creating ECC Primary Key... 
@@ -1370,7 +1368,7 @@ Expected Output: OpenSSL-Provider RSA (Enc/Dec/Sign/Verify) Verification Failure
 
 ## ECC (Sign/Verify)
 
-This section shows the uses of OpenSSL libraries to do encryption, decryption, signing and verification.
+This section shows the uses of OpenSSL libraries to do signing and verification.
 
 Select "ECC (Sign/Verify)".
 
@@ -1410,7 +1408,7 @@ Expected Output (Partial): OpenSSL-Provider ECC (Sign/Verify) Generate ECC Keypa
 
 #### ECC Signing and Verification
 
-To sign, enter input in "Data Input" and select "RSA Signing" to sign.
+To sign, enter input in "Data Input" and select "ECC Signing" to sign.
 
 ```shell
 Signing Data Input with Private Key...
@@ -1429,7 +1427,7 @@ mysig contains:
 
 Expected Output (Partial): OpenSSL-Provider ECC (Sign/Verify) Signing with default input "Hello World"
 
-To verify, ensure correct "Data Input" and select "RSA Verification".
+To verify, ensure correct "Data Input" and select "ECC Verification".
 
 ```shell
 Signature Verified Successfully
@@ -1588,7 +1586,7 @@ a) The TLS handshake
 
 b) TLS Cipher
 
-As shown in Figure 17 the complete TLS handshake process was successful, and the encrypted channel established.
+As shown in Figure 18 the complete TLS handshake process was successful, and the encrypted channel established.
 
 | ![](images/OpenSSL/RSA_Client_Server/TPMOSSL_RSA_StartClient.png) |
 | ----------------------------------------------------------------- |
@@ -1599,7 +1597,7 @@ Figure 18: OpenSSL-Provider RSA (Client/Server) Start Client Succeed
 
 ### Secure data exchange between Server and Client
 
-Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 18.
+Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 19.
 
 | ![](images/OpenSSL/RSA_Client_Server/TPMOSSL_RSA_ClientServerCommunication.png) |
 | ------------------------------------------------------------------------------- |
@@ -1711,7 +1709,7 @@ a) The TLS handshake
 
 b) TLS Cipher
 
-As shown in Figure 20 b the complete TLS handshake process was successful, and the encrypted channel
+As shown in Figure 21 the complete TLS handshake process was successful, and the encrypted channel
 
 | ![](images/OpenSSL/ECC_Client_Server/Start_Client.png) |
 | ------------------------------------------------------- |
@@ -1722,7 +1720,7 @@ Figure 21: OpenSSL-Provider ECC (Client/Server) Start Client
 
 ### Secure data exchange between Server and client
 
-Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 21.
+Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 22.
 
 | ![](images/OpenSSL/ECC_Client_Server/TPMOSSL_ECC_ClientServerCommunication.png) |
 | ------------------------------------------------------------------------------- |
@@ -2017,7 +2015,7 @@ action: evicted
 Example Output: Evicting AK/EK handle 0x81010002 Success
 
 
-## <a name="references"></a>References
+# <a name="references"></a>References
 
 1.  <https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/>
 2.  <https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/>
