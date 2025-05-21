@@ -3,6 +3,7 @@ import shell_util as exec_cmd
 import misc_dialogs as misc
 import images as img
 from binascii import unhexlify
+import os
 """ NOTE: All the tpm2_evictcontrol commands, the context is hardcoded. Also, all the files created are fixed in their naming.
 Thus if not removed from persistent store, the newly created key will be 'lost',
 as the old one still resides at the same context. To fix this, the context value will have to be cleared in tab1, context management.
@@ -184,7 +185,8 @@ class Tab_RSA(wx.Panel):
     # note: this function/command runs for quite a while as compared to ECC.
     def OnCreatePrimary(self):
         owner_auth = exec_cmd.get_auth_from_config('owner')
-        exec_cmd.execTpmToolsAndCheck(["rm", "RSAprimary.ctx"])
+        if os.path.exists("RSAprimary.ctx"):
+            exec_cmd.execTpmToolsAndCheck(["rm", "RSAprimary.ctx"])
         
         handles_output = exec_cmd.execCLI(["tpm2_getcap", "handles-persistent"])
         evict_status = False

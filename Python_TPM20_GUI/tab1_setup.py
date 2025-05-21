@@ -1180,8 +1180,6 @@ class Tab_Handles(wx.Panel):
 
     def OnEvict(self, evt):
         specific_handle = self.input_handle.GetValue()
-        if (misc.OwnerDlg(self, "Enter Owner Authorisation").ShowModal() == -1):
-            return
         command_output = exec_cmd.execTpmToolsAndCheck([
             "tpm2_evictcontrol",
             "-C", "o",
