@@ -10,39 +10,36 @@ This page provides instructions on how to install and configure the Raspberry Pi
 
 ## Prerequisites 
 
--   Raspberry Pi® 3 Model B+ / Raspberry Pi® 4 Model B
--   Micro SD card (≥8GB) flashed with Raspberry Pi® Bullseye OS (Released on 2022-09-26). Download the official image from [[1]](#references).
--   OPTIGA™ TPM 2.0 evaluation board
-     -   [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/)
-    -   [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/)
+This tool was tested on a Raspberry Pi (RPi) 3 Model B+/ RPi 4 Model B / RPi 5 with Debian Linux in Release Version 12 (Bookworm) and kernel version 6.12.25 using an Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 attached to the Raspberry Pi board.
 
-| ![](images/Overview/TPMRPI3.png) |
-| --------------------------------- |
+| ![](images/Overview/TPMRPI4.png) |
+| :------------------------------: |
+
+Figure 1: Infineon OPTIGA™ TPM SLB 9672 RPI Evaluation Board on a Raspberry Pi 4
 
 
 
 **Table 1** shows a summary of the hardware and environment used.
 
-| Hardware             | Version   and Firmware/OS                                    | Comment                                                      |
-| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Host  PC             | Running Linux/Windows®, for example Ubuntu® 18.04 above or Windows 10 as long as VNC viewer is present | This  platform is used for interacting with  the Raspberry Pi® in a more convenient and faster way compared to doing all  actions directly on the Raspberry Pi®. |
-|  OPTIGA™ TPM 2.0 evaluation board       |  • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/)  | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®. |
-| Raspberry  Pi® Board | •  Model 3 B+/ 4 B, Bullseye OS (2022-09-26) <br />  •  Micro SD Card with at least 8 GB <br />  •  Micro-B/ Type C USB cable for power supply | A SD  card with Raspberry Pi® Bullseye OS and kernel version 5.15.61 on it is required, which can be downloaded at [[1]](#references). This SD card will be  plugged in the developer PC |
-
-
+| Hardware                          | Version   and Firmware/OS                                    | Comment                                                      |
+| --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Host  PC                          | Windows® 11 with VNC viewer                                  | This  platform is used for interacting with  the Raspberry Pi® in a more convenient and faster way compared to doing all  actions directly on the Raspberry Pi®. |
+| OPTIGA™ TPM 2.0 evaluation boards | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®. |
+| Raspberry  Pi® Board              | •  Model 3 B+/ 4 B/ 5, Bookworm OS (2025-05-13) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply | A SD  card with Raspberry Pi® Bookworm OS and kernel version 6.12.25 on it is required, which can be downloaded at [[1]](#references). This SD card will be  plugged in the developer PC |
 
 **Table 2** shows a summary of the software used.
 
-| Software        | Version    | Comment                                                      |
-| --------------- | ---------- | ------------------------------------------------------------ |
-| tpm2-tools      | 5.2        | https://github.com/tpm2-software/tpm2-tools Tag: ebd59ef827f1fc8e0efa43f9cade4d3d7efee59a |
-| tpm2-abrmd      | 2.4.1      | https://github.com/tpm2-software/tpm2-abrmd Tag: 71bfb9457267683e1f6a6dea42622442a62203a5 |
-| tpm2-tss        | 3.2.0      | https://github.com/tpm2-software/tpm2-tss Tag: e237e4d33cbf280292a480edd8ad061dcd3a37a2 |
-| tpm2-tss-engine | 1.1.0      | https://github.com/tpm2-software/tpm2-tss-engine Tag: 6f387a4efe2049f1b4833e8f621c77231bc1eef4 |
+|   Software   | Version |
+| :----------: | :------ |
+|  tpm2-tools  | 5.4.1   |
+|  tpm2-abrmd  | 3.0.0-1 |
+|   tpm-udev   | 0.6     |
+|  libtss2-*   | 3.2.1-3 |
+| tpm2-openssl | 1.1.1-1 |
 
 
 
-## <a name="enabletpm"></a> Enable OPTIGA™ TPM 2.0 support on Raspberry Pi
+## Enable OPTIGA™ TPM 2.0 support on Raspberry Pi
 
 Insert the flashed SD card and boot the Raspberry Pi®.
 
