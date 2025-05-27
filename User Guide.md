@@ -358,7 +358,7 @@ Platform Configuration Register function descriptions
 | ![](images/Optiga_Setup/PCR/TPMPCRScreen.png) |
 | --------------------------------------------- |
 
-Figure 7: OPTIGA™ TPM Platform Configuration Registers Functions Descriptions
+Figure 6: OPTIGA™ TPM Platform Configuration Registers Functions Descriptions
 
 
 ### PCR Listing
@@ -369,7 +369,7 @@ To list all 24 PCRs using SHA-1/SHA-256/SHA-384, select the corresponding bank n
 | ![](images/Optiga_Setup/PCR/TPMPCR_POPUP.png) |
 | --------------------------------------------- |
 
-Figure 8: PCR List All 24 Registers in SHA-256
+Figure 7: PCR List All 24 Registers in SHA-256
 
 
 ```shell
@@ -468,7 +468,7 @@ NVM and Certificate Management function descriptions
 | ![](images/Optiga_Setup/NVM/TPMNVM_Screen.png) |
 | ---------------------------------------------- |
 
-Figure 9: OPTIGA™ TPM NVM and Certificate Management Functions Descriptions
+Figure 8: OPTIGA™ TPM NVM and Certificate Management Functions Descriptions
 
  
 
@@ -706,7 +706,7 @@ Handle Management function descriptions.
 | ![](images/Optiga_Setup/Handle_Management/TPMHM_MainScreen.png) |
 | --------------------------------------------------------------- |
 
-Figure 10: OPTIGA™ TPM Handle Management Functions Descriptions
+Figure 9: OPTIGA™ TPM Handle Management Functions Descriptions
 
 
 
@@ -809,7 +809,7 @@ RSA Cryptographic Function Description
 | ![](images/CryptoFNS/RSA/CryptoRSAMain_Screen.png) |
 | -------------------------------------------------- |
 
-Figure 11: RSA Cryptographic Function Description
+Figure 10: RSA Cryptographic Function Description
 
 
 
@@ -903,7 +903,7 @@ The data has been encrypted.
 | ![](images/CryptoFNS/RSA/RSA_Unedited/TPMCryptoFn_RSAEncryptedData.png) |
 | ----------------------------------------------------------------------- |
 
-Figure 12: Encrypted “data_encrypted.txt” shown in unreadable form
+Figure 11: Encrypted “data_encrypted.txt” shown in unreadable form
 
 
 To decrypt encrypted data using RSA key, simply select "RSA Decrypt". Data has been decrypted.
@@ -1056,7 +1056,7 @@ ECC Cryptographic Function Description
 | ![](images/CryptoFNS/ECC/TPMCryptoFn_ECCMainScreen.png) |
 | ------------------------------------------------------- |
 
-Figure 13: ECC Cryptographic Function Description
+Figure 12: ECC Cryptographic Function Description
 
 
 
@@ -1259,7 +1259,7 @@ RSA (Enc/Dec/Sign/Verify) Function Description
 | ![](images/OpenSSL/RSA_Enc_Dec_Sign_Verify/X4_MainScreen.png) |
 | ------------------------------------------------------------- |
 
-Figure 14: RSA (Enc/Dec/Sign/Verify) Function Description
+Figure 13: RSA (Enc/Dec/Sign/Verify) Function Description
 
 
 
@@ -1377,7 +1377,7 @@ ECC (Sign/Verify) Function Description
 | ![](images/OpenSSL/ECC_Sign_Verify/ECC_SV_function.png) |
 | ------------------------------------------------------- |
 
-Figure 15: ECC (Sign/Verify) Function Description
+Figure 14: ECC (Sign/Verify) Function Description
 
 
 
@@ -1460,7 +1460,7 @@ Select "RNG".
 | ![](images/OpenSSL/RNG/RNG_Unedited/TPMOSSL_RNG_MainScreen.png) |
 | ------------------------------------------------------------ |
 
-Figure 16: OpenSSL-Provider RNG Screen
+Figure 15: OpenSSL-Provider RNG Screen
 
 To change the bytes generated, enter the input in "No. of bytes to be generated". To change the encoding of the random number, select the arrow at "Pick encoding of Random Number" and select `hex` or `base64`. Select "Generate RNG" to generate random number.
 
@@ -1497,7 +1497,7 @@ RSA (Client/Server) Function
 | ![](images/OpenSSL/RSA_Client_Server/X2.png) |
 | -------------------------------------------- |
 
-Figure 17: RSA (Client/Server) Function Description
+Figure 16: RSA (Client/Server) Function Description
 
 
 
@@ -1583,23 +1583,23 @@ a) The TLS handshake
 
 b) TLS Cipher
 
-As shown in Figure 18 the complete TLS handshake process was successful, and the encrypted channel established.
+As shown in Figure 17 the complete TLS handshake process was successful, and the encrypted channel established.
 
 | ![](images/OpenSSL/RSA_Client_Server/TPMOSSL_RSA_StartClient.png) |
 | ----------------------------------------------------------------- |
 
-Figure 18: OpenSSL-Provider RSA (Client/Server) Start Client Succeed
+Figure 17: OpenSSL-Provider RSA (Client/Server) Start Client Succeed
 
 
 
 ### Secure data exchange between Server and Client
 
-Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 19.
+Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 18.
 
 | ![](images/OpenSSL/RSA_Client_Server/TPMOSSL_RSA_ClientServerCommunication.png) |
 | ------------------------------------------------------------------------------- |
 
-Figure 19: OpenSSL-Provider RSA (Client/Server) Communication
+Figure 18: OpenSSL-Provider RSA (Client/Server) Communication
 
 To stop connection, end the server by selecting "Start/Stop Server".
 
@@ -1620,7 +1620,7 @@ ECC (Client/Server) Function Description
 | ![](images/OpenSSL/ECC_Client_Server/X3.png) |
 | -------------------------------------------- |
 
-Figure 20: ECC (Client/Server) Function Description
+Figure 19: ECC (Client/Server) Function Description
 
 
 
@@ -1706,23 +1706,23 @@ a) The TLS handshake
 
 b) TLS Cipher
 
-As shown in Figure 21 the complete TLS handshake process was successful, and the encrypted channel
+As shown in Figure 20 the complete TLS handshake process was successful, and the encrypted channel
 
 | ![](images/OpenSSL/ECC_Client_Server/Start_Client.png) |
 | ------------------------------------------------------- |
 
-Figure 21: OpenSSL-Provider ECC (Client/Server) Start Client
+Figure 20: OpenSSL-Provider ECC (Client/Server) Start Client
 
 
 
 ### Secure data exchange between Server and client
 
-Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 22.
+Messages can be sent from Server to Client as well as Client to Server by entering input in the boxes below and selecting "Write to Server" or "Write to Client". The message "Hello from Client" and "Hello from Server" has been successfully sent in Figure 21.
 
 | ![](images/OpenSSL/ECC_Client_Server/TPMOSSL_ECC_ClientServerCommunication.png) |
 | ------------------------------------------------------------------------------- |
 
-Figure 22: OpenSSL-Provider ECC (Client/Server) Communication
+Figure 21: OpenSSL-Provider ECC (Client/Server) Communication
 
 To stop connection, end the server by selecting "Start/Stop Server".
 
@@ -1741,7 +1741,7 @@ Data Sealing with Policy Function Description
 | ![](images/Data_Sealing_with_Policy/TPMEA_MainScreen.png) |
 | --------------------------------------------------------- |
 
-Figure 23: Data Sealing with Policy Function Description
+Figure 22: Data Sealing with Policy Function Description
 
 
 
@@ -1905,7 +1905,7 @@ A TPM attestation offers cryptographic proof of software state. The attestation 
 | ![](images/Attestation/TPMAttestation_MainScreen.png) |
 | ----------------------------------------------------- |
 
-Figure 24: Attestation Function Description
+Figure 23: Attestation Function Description
 
 
 
