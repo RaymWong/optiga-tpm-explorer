@@ -1,86 +1,16 @@
 # **OPTIGA™ TPM 2.0 Explorer User Guide**
 
+# Navigation
 
-This page helps you explore the tool to accelerate your learning about OPTIGA™ TPM 2.0. 
-
-1. [Overview](#overview)
-    - [1.1 Features](#features)
-    - [1.2 Use cases](#use-cases)
-    - [1.3 Setup environment](#setup-environment)
-2.  [Setup and Basic Features](#setup-and-basic-features)
-    - [2.1 Setup](#setup)
-        - [2.1.1 OPTIGA™ TPM Setup Functions](#optiga-tpm-setup-functions)
-        - [2.1.2 TPM Startup](#tpm-startup)
-        - [2.1.3 Viewing TPM (fixed) Capabilities](#viewing-tpm-fixed-capabilities)
-        - [2.1.4 Changing Authorization values of TPM](#changing-authorization-values-of-tpm)
-        - [2.1.5 Dictionary Attack](#dictionary-attack)
-        - [2.1.6 TPM ClearLock](#tpm-clearlock)
-    - [2.2 Platform Configuration Registers](#platform-configuration-registers)
-        - [2.2.1 Platform Configuration Registers Functions](#platform-configuration-registers-functions)
-        - [2.2.2 PCR Listing](#pcr-listing)
-        - [2.2.3 PCR Extend and PCR Event](#pcr-extend-and-pcr-event)
-    - [2.3 NVM and Certificate Management](#nvm-and-certificate-management)
-        - [2.3.1 NVM and Certificate Management Functions](#nvm-and-certificate-management-functions)
-        - [2.3.2 NV Define](#nv-define)
-        - [2.3.3 NV Write](#nv-write)
-        - [2.3.4 Reading Certificate](#reading-certificate)
-        - [2.3.5 Writing File](#writing-file)
-        - [2.3.6 NV Release](#nv-release)
-    - [2.4 Handle Management](#handle-management)
-        - [2.4.1 Handle Management Functions](#handle-management-functions)
-        - [2.4.2 Handle Management List All](#handle-management-list-all)
-        - [2.4.3 Handle Management Evict Persistent](#handle-management-evict-persistent)
-3.  [Cryptographic Functions](#cryptographic-functions)
-    - [3.1 Hash Cryptographic Functions](#hash-cryptographic-functions)
-    - [3.2 RSA Cryptographic Functions](#rsa-cryptographic-functions)
-        - [3.2.1 RSA Cryptographic Function Description](#rsa-cryptographic-function-description)
-        - [3.2.2 Creating RSA Keypair](#creating-rsa-keypair)
-        - [3.2.3 Encrypting and Decrypting RSA](#encrypting-and-decrypting-rsa)
-        - [3.2.4 Signing and Verifying RSA](#signing-and-verifying-rsa) 
-     - [3.3 ECC Cryptographic Functions](#ecc-cryptographic-functions)
-        - [3.3.1 ECC Cryptographic Function Description](#ecc-cryptographic-function-description)
-        - [3.3.2 Creating ECC Keypair](#creating-ecc-keypair)
-        - [3.3.3 Signing and Verifying ECC](#signing-and-verifying-ecc)
-4.  [OpenSSL Provider](#openssl-provider)
-    - [4.1 RSA (Enc/Dec/Sign/Verify)](#rsa-encdecsignverify)
-        - [4.1.1 RSA (Enc/Dec/Sign/Verify) Function Description](#rsa-encdecsignverify-function-description)
-        - [4.1.1.1 RSA Encryption and Decryption](#rsa-encryption-and-decryption)
-        - [4.1.1.2 RSA Signing and Verification](#rsa-signing-and-verification)
-    - [4.2 ECC (Sign/Verify)](#ecc-signverify)
-        - [4.2.1 ECC (Sign/Verify) Function Description](#ecc-signverify-function-description)
-        - [4.1.1.1 ECC Keypair Generation](#ecc-keypair-generation)
-        - [4.2.1.2 ECC Signing and Verification](#ecc-signing-and-verification)
-    - [4.3 Random Number Generator](#random-number-generator)
-    - [4.4 RSA (Client/Server)](#rsa-clientserver)
-        - [4.4.1 RSA (Client/Server) Function Description](#rsa-clientserver-function-description)
-        - [4.4.2 Create Root CA and Its Certificate](#create-root-ca-and-its-certificate)
-        - [4.4.3 Create Server Certificate](#create-server-certificate)
-        - [4.4.4 Create an OpenSSL Server](#create-an-openssl-server)
-        - [4.4.5 Create an OpenSSL Client](#create-an-openssl-client)
-        - [4.4.6 Secure data exchange between Server and Client](#secure-data-exchange-between-server-and-client)
-    - [4.5 ECC (Client/Server)](#ecc-clientserver)
-        - [4.5.1 ECC (Client/Server) Function Description](#ecc-clientserver-function-description)
-        - [4.5.2 Create Root CA and Its Certificate](#create-root-ca-and-its-certificate-1)
-        - [4.5.3 Create Server Certificate](#create-server-certificate-1)
-        - [4.5.4 Create an OpenSSL Server](#create-an-openssl-server-1)
-        - [4.5.5 Creating an OpenSSL Client](#creating-an-openssl-client)
-        - [4.5.6 Secure data exchange between Server and client](#secure-data-exchange-between-server-and-client-1)
-5.  [Data Sealing with Policy](#data-sealing-with-policy)
-    - [5.1 Data Sealing with Policy Function Description](#data-sealing-with-policy-function-description)
-    - [5.2 Data Sealing with Policy Functions](#data-sealing-with-policy-functions)
-        - [5.2.1 Data Sealing with Policy](#data-sealing-with-policy-1)
-6.  [Attestation](#attestation)
-    - [6.1 Attestation Function Description](#attestation-function-description)
-    - [6.2 Generating Quote](#generating-quote)
-    - [6.3 Verifying Quote](#verifying-quote)
-    - [6.4 Evict AK/EK Handle](#evict-akek-handle)
-7.  [References](#references)
+[TOC]
 
 # Overview
 
 The OPTIGA™ TPM 2.0 Explorer is a GUI-based tool for users to familiarize themselves with TPM 2.0 quickly and easily using Infineon's OPTIGA™ TPM 2.0 solution for Raspberry Pi. In addition, the OPTIGA™ TPM 2.0 Explorer demonstrates how the OPTIGA™ TPM 2.0 can be used to increase security and trust for data sharing across different networking and cloud platforms.
 
 Using this tool, you can instantly experience the benefits that [OPTIGA™ TPM 2.0](https://www.infineon.com/cms/en/product/security-smart-card-solutions/optiga-embedded-security-solutions/optiga-tpm/?redirId=39899/) will bring to IoT devices and network equipment.
+
+
 
 ## Features
 
@@ -108,37 +38,33 @@ Using this tool, you can instantly experience the benefits that [OPTIGA™ TPM 2
 
 For more information on how to setup the tool environment, refer to the [OPTIGA™ TPM 2.0 Explorer Setup Guide](./Setup%20Guide.md)
 
-This tool was tested on a Raspberry Pi (RPi) 3 Model B+/ RPi 4 Model B with Debian Linux in Release Version 12 (Bookworm) and kernel version 6.6.51 using an Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 attached to the Raspberry Pi board (Figure 1 and Figure 2).
-
-![](images/Overview/RpiBookworm.png) 
-
-Figure 1: Debian Linux 11 (Bookworm)
+This tool was tested on a Raspberry Pi (RPi) 3 Model B+/ RPi 4 Model B / RPi 5 with Debian Linux in Release Version 12 (Bookworm) and kernel version 6.12.25 using an Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 attached to the Raspberry Pi board.
 
 | ![](images/Overview/TPMRPI4.png) |
 | :------------------------------: |
 
-Figure 2: Infineon OPTIGA™ TPM SLB 9642 RPI Evaluation Board on a Raspberry Pi 4
+Figure 1: Infineon OPTIGA™ TPM SLB 9672 RPI Evaluation Board on a Raspberry Pi 4
 
 
 
 **Table 1** shows a summary of the hardware and environment used.
 
-| Hardware                         | Version   and Firmware/OS                                                                                                                                                                                                                                   | Comment                                                                                                                                                                                 |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Host  PC                         | Running Linux/Windows®, for example Ubuntu® 18.04 above or Windows 10 as long as VNC viewer is present                                                                                                                                                      | This  platform is used for interacting with  the Raspberry Pi® in a more convenient and faster way compared to doing all  actions directly on the Raspberry Pi®.                        |
-| OPTIGA™ TPM 2.0 evaluation board | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®.                                   |
-| Raspberry  Pi® Board             | •  Model 3 B+/ 4 B, Bookworm OS (2024-10-08) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply                                                                                                             | A SD  card with Raspberry Pi® Bookworm OS and kernel version 6.6.51 on it is required, which can be downloaded at [[1]](#references). This SD card will be  plugged in the developer PC |
+| Hardware                          | Version   and Firmware/OS                                    | Comment                                                      |
+| --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Host  PC                          | Windows® 11 with VNC viewer                                  | This  platform is used for interacting with  the Raspberry Pi® in a more convenient and faster way compared to doing all  actions directly on the Raspberry Pi®. |
+| OPTIGA™ TPM 2.0 evaluation boards | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®. |
+| Raspberry  Pi® Board              | •  Model 3 B+/ 4 B/ 5, Bookworm OS (2025-05-13) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply | A SD  card with Raspberry Pi® Bookworm OS and kernel version 6.12.25 on it is required, which can be downloaded at [[1]](#references). This SD card will be  plugged in the developer PC |
 
 
 
 **Table 2** shows a summary of the software used.
 
-| Software    | Version | Comment                                                                                   |
-| ----------- | ------- | ----------------------------------------------------------------------------------------- |
-| tpm2-tools  | 5.2     | https://github.com/tpm2-software/tpm2-tools Tag: ebd59ef827f1fc8e0efa43f9cade4d3d7efee59a |
-| tpm2-abrmd  | 2.4.1   | https://github.com/tpm2-software/tpm2-abrmd Tag: 71bfb9457267683e1f6a6dea42622442a62203a5 |
-| tpm2-tss    | 3.2.0   | https://github.com/tpm2-software/tpm2-tss Tag: e237e4d33cbf280292a480edd8ad061dcd3a37a2   |
-| tpm2-opnssl | 3.0.15  | https://github.com/openssl/openssl Tag: c523121f902fde2929909dc7f76b13ceb4961efe          |
+| Software     | Version | Comment                                                      |
+| ------------ | ------- | ------------------------------------------------------------ |
+| tpm2-tools   | 5.2     | https://github.com/tpm2-software/tpm2-tools Tag: ebd59ef827f1fc8e0efa43f9cade4d3d7efee59a |
+| tpm2-abrmd   | 2.4.1   | https://github.com/tpm2-software/tpm2-abrmd Tag: 71bfb9457267683e1f6a6dea42622442a62203a5 |
+| tpm2-tss     | 3.2.0   | https://github.com/tpm2-software/tpm2-tss Tag: e237e4d33cbf280292a480edd8ad061dcd3a37a2 |
+| tpm2-openssl | 3.0.15  | https://github.com/openssl/openssl Tag: c523121f902fde2929909dc7f76b13ceb4961efe |
 
 
 
@@ -153,7 +79,7 @@ Select "Setup and Basic Features". Enter the OPTIGA™ TPM Setup Menu.
 | ![](images/Optiga_Setup/Setup/MainScreen.png) |
 | --------------------------------------------- |
 
-Figure 3: Setup and Basic Features Selection
+Figure 2: Setup and Basic Features Selection
 
 
 ### OPTIGA™ TPM Setup Functions
@@ -163,7 +89,7 @@ Setup function descriptions
 | ![](images/Optiga_Setup/Setup/TPM_SetupScreen1.png) |
 | --------------------------------------------------- |
 
-Figure 4: OPTIGA™ TPM Setup Menu Function Descriptions
+Figure 3: OPTIGA™ TPM Setup Menu Function Descriptions
 
 
  ### <a name="tpm-startup"></a>TPM Startup
@@ -279,7 +205,7 @@ To change the lockout, endorsement, and owner authorization values of TPM, selec
 | ![](images/Optiga_Setup/Setup/SetAuthScreen.png) |
 | :----------------------------------------------: |
 
-Figure 5: Configure authorization values in the pop-up dialog
+Figure 4: Configure authorization values in the pop-up dialog
 
 Once successful, select "Get TPM capability (variable)" to confirm the results. The first 3 AuthSet values should be 1 once the owner, endorsement and lockout authorization value values are set. 
 
@@ -301,7 +227,7 @@ Select "Dictionary Attack Settings" in the left panel to configure settings for 
 | ![](images/Optiga_Setup/Setup/DictionaryAttackSettings.png) |
 | ----------------------------------------------------------- |
 
-Figure 6: Dictionary Attack Settings Configuration
+Figure 5: Dictionary Attack Settings Configuration
 
 
 If the Dictionary Attack Settings are successfully configured, the three following values will be changed accordingly when selecting "Get TPM capability (Variable)".
@@ -2017,7 +1943,7 @@ Example Output: Evicting AK/EK handle 0x81010002 Success
 
 # <a name="references"></a>References
 
-1.  <https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/>
+1.  https://downloads.raspberrypi.org/raspios_full_arm64/images/raspios_full_arm64-2025-05-13/
 2.  <https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/>
 3.  <http://www.infineon.com/tpm>
 4.  https://trustedcomputinggroup.org/resource/tpm-main-specification/
