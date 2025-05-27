@@ -29,12 +29,12 @@ Figure 1: Infineon OPTIGA™ TPM SLB 9672 RPI Evaluation Board on a Raspberry Pi
 
 **Table 2** shows a summary of the software used.
 
-|   Software   | Version |
-| :----------: | :------ |
-|  tpm2-tools  | 5.4.1   |
-|  tpm2-abrmd  | 3.0.0-1 |
-|   tpm-udev   | 0.6     |
-|  libtss2-*   | 3.2.1-3 |
+| Software     | Version |
+| :----------- | ------- |
+| tpm2-tools   | 5.4.1   |
+| tpm2-abrmd   | 3.0.0-1 |
+| tpm-udev     | 0.6     |
+| libtss2-*    | 3.2.1-3 |
 | tpm2-openssl | 1.1.1-1 |
 
 
@@ -160,7 +160,7 @@ You should be successfully connected and able to view the RPI through VNC connec
 
 
 
-## <a name="install-tpm_explorer"></a> Install OPTIGA™ TPM 2.0 Explorer 
+## Install OPTIGA™ TPM 2.0 Explorer 
 
 Download TPM Explorer Source Code (Approx. 175MB):  
 via: https://github.com/Infineon/optiga-tpm-explorer/releases
@@ -241,4 +241,4 @@ For more information on the OPTIGA™ TPM 2.0 Explorer, please refer to the [OPT
 
 ## References
 
-1.  <https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/>
+1.  https://downloads.raspberrypi.org/raspios_full_arm64/images/raspios_full_arm64-2025-05-13/
