@@ -2,11 +2,10 @@
 
 This page provides instructions on how to install and configure the Raspberry Pi® to enable the [OPTIGA™ TPM 2.0](https://www.infineon.com/cms/en/product/security-smart-card-solutions/optiga-embedded-security-solutions/optiga-tpm/?redirId=39899/) in order to use the OPTIGA™ TPM 2.0 Explorer.
 
-1.  [Prerequisites](#prerequisites)
-2.  [Enable OPTIGA™ TPM 2.0 support on Raspberry Pi](#enabletpm)
-3.  [Interface Set Up](#interface-set-up)
-4.  [Install OPTIGA™ TPM 2.0 Explorer](#install-tpm_explorer)
-5.  [References](#references)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Frequently Asked Questions](#frequently-asked-questions)
+- [References](#references)
 
 ## Prerequisites 
 
@@ -21,11 +20,11 @@ Figure 1: Infineon OPTIGA™ TPM SLB 9672 RPI Evaluation Board on a Raspberry Pi
 
 **Table 1** shows a summary of the hardware and environment used.
 
-| Hardware                          | Version   and Firmware/OS                                    | Comment                                                      |
-| --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Host  PC                          | Windows® 11 with VNC viewer                                  | This  platform is used for interacting with  the Raspberry Pi® in a more convenient and faster way compared to doing all  actions directly on the Raspberry Pi®. |
-| OPTIGA™ TPM 2.0 evaluation boards | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®. |
-| Raspberry  Pi® Board              | •  Model 3 B+/ 4 B/ 5, Bookworm OS (2025-05-13) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply | A SD  card with Raspberry Pi® Bookworm OS and kernel version 6.12.25 on it is required, which can be downloaded at [[1]](#references). This SD card will be  plugged in the developer PC |
+| Hardware                                    | Version   and Firmware/OS                                    | Comment                                                      |
+| ------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Host  PC/Laptop                             | Windows® 11 with VNC viewer                                  | This  is an alternative option to interacting with  the Raspberry Pi® in a more convenient and faster way without a monitor connected to Raspberry Pi®. |
+| OPTIGA™ TPM 2.0 evaluation boards supported | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®. |
+| Raspberry  Pi® Board                        | •  Model 3 B+/ 4 B/ 5, Bookworm OS (2025-05-13) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply | Raspberry Pi® Bookworm OS with kernel version 6.12.25  can be downloaded at [[1]](#references). <br />To setup the Raspberry Pi®, follow the [getting started guide](https://www.raspberrypi.com/documentation/computers/getting-started.html#raspberry-pi-imager) to setup the SD card accordingly. |
 
 **Table 2** shows a summary of the software used.
 
@@ -37,33 +36,9 @@ Figure 1: Infineon OPTIGA™ TPM SLB 9672 RPI Evaluation Board on a Raspberry Pi
 | libtss2-*    | 3.2.1-3 |
 | tpm2-openssl | 1.1.1-1 |
 
+## Installation  
 
-
-## Enable OPTIGA™ TPM 2.0 support on Raspberry Pi
-
-Insert the flashed SD card and boot the Raspberry Pi®.
-
-Open the configuration file in an editor:  
-
-```shell
-sudo nano /boot/config.txt   
-```
-
-Insert the following lines to enable SPI and TPM( for SLB9670 and SLB9672): 
-
-```shell
-dtoverlay=tpm-slb9670
-```
-
-Save the file and exit the editor.  
-
-
-
-
-
-## Install OPTIGA™ TPM 2.0 Explorer 
-
-Download TPM Explorer Source Code (Approx. 175MB):  
+Download TPM Explorer Source Code:  
 via: https://github.com/Infineon/optiga-tpm-explorer/releases
 or 
 
@@ -71,74 +46,46 @@ via https:
 ```shell
 git clone https://github.com/Infineon/optiga-tpm-explorer.git
 ```
-via ssh:(Need to setup SSH keys associated with your account)
-```shell
-git clone git@github.com:Infineon/optiga-tpm-explorer.git
-```
 Execute Installation script:
 ```shell
 cd optiga-tpm-explorer
 ./installation_script.sh
 ```
 
-
-
-The installation script installs the following dependencies required and compiles the source code for the OPTIGA™ TPM 2.0 Explorer Application.
--   python-wxtools
--   tpm2-tss
--   tpm2-tools
--   tpm2-abrmd
--   tpm2-tss-engine
-
-Once complete, to run from binary:
+Once complete, run the program by:
 
 ```shell
-cd ~/optiga-tpm-explorer/Python_TPM20_GUI/bin
-python main.pyc
+cd ~/optiga-tpm-explorer/Python_TPM20_GUI/
+./start_gui.sh
 ```
-To run from start up script:
-
-go to your home directory and access the file called TPM_Explorer.
-
-| ![](images/Settingup_TPMExplorer/TPM_Explorer.png) |
-| ------------------------------------------------------------ |
-
-**Figure 13**: TPM_Explorer File Directory
-
-Next, access the file called Python_TPM20_GUI.
-
-| ![](images/Settingup_TPMExplorer/Python_TPM20_GUI.png) |
-| ------------------------------------------------------------ |
-
-**Figure 14**: Python_TPM20_GUI File Directory
-
-Next, enter the bin file.
-
-| ![](images/Settingup_TPMExplorer/binfile.png) |
-| ------------------------------------------------------------ |
-
-**Figure 15**: Python_TPM20_GUI Bin File Directory
-
-Execute "start_gui.sh" and select execute in terminal.
-
-| ![](images/Settingup_TPMExplorer/start_gui.png) |
-| ------------------------------------------------------------ |
-
-**Figure 16**: Selecting start_gui.sh
-
-| ![](images/Settingup_TPMExplorer/execute.png) |
-| ------------------------------------------------------------ |
-
-**Figure 17**: Executing start_gui.sh in terminal
-
-A terminal will pop up and the OPTIGA TPM 2.0 Explorer interface will be open.
+OPTIGA™ TPM 2.0 Explorer main menu will appear.
 
 | ![](images/Setup/MainScreen.png) |
 | ------------------------------------------------------- |
 
-**Figure 18**: Home Screen of OPTIGA TPM 2.0 Explorer
+**Figure 1**: Home Screen of OPTIGA™ TPM 2.0 Explorer
 
 For more information on the OPTIGA™ TPM 2.0 Explorer, please refer to the [OPTIGA™ TPM 2.0 Explorer User Guide](./User%20Guide.md).
+
+## Frequently Asked Questions 
+
+If OPTIGA™ TPM 2.0 Explorer failed to launch:
+
+| ![](images/Setup/insert_tpm_module.png) |
+| :-------------------------------------: |
+
+Open the configuration file in an editor:  
+
+```shell
+sudo nano /boot/firmware/config.txt   
+```
+
+Ensure the following settings are set ( for SLB9670 and SLB9672) and reboot after saving the file: 
+
+```shell
+dtparam=spi=on
+dtoverlay=tpm-slb9670
+```
 
 ## References
 
