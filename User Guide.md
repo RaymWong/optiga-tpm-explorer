@@ -108,7 +108,7 @@ Setup function descriptions
 Figure 3: OPTIGA™ TPM Setup Menu Function Descriptions
 
 
- ### <a name="tpm-startup"></a>TPM Startup
+ ### TPM Startup
 
 The OPTIGA™ TPM will startup when the RPI is powered on. However, if the reset button is pressed, the TPM2_startup command must be invoked separately by clicking on the "Startup" button before running any TPM command or operation. Otherwise, error message will be displayed for example if  "Get TPM Capability (variable)" button is selected as follow.  
 
@@ -241,7 +241,7 @@ Expected Output (Partial): If the owner, endorsement, and lockout authorization 
 Select "Dictionary Attack Settings" in the left panel to configure settings for dictionary attacks. In the pop-up dialog, configure the dictionary attack settings and select "OK" to confirm. You can change the number of attempts before lockout, the time taken for recovery from failure and lockout recovery.
 
 | ![](images/Optiga_Setup/Setup/DictionaryAttackSettings.png) |
-| ----------------------------------------------------------- |
+| :---------------------------------------------------------: |
 
 Figure 5: Dictionary Attack Settings Configuration
 
@@ -312,7 +312,7 @@ Figure 6: OPTIGA™ TPM Platform Configuration Registers Functions Descriptions
 To list all 24 PCRs using SHA-1/SHA-256/SHA-384, select the corresponding bank name from the dropdown at the top (SHA-1 as the default setting). A pop-up dialog will then be shown. Press the "RESET" button on the TPM to apply the change and select "Reset Pressed" in the dialog. Once done,  click 'PCR List All'.
 
 | ![](images/Optiga_Setup/PCR/TPMPCR_POPUP.png) |
-| --------------------------------------------- |
+| :-------------------------------------------: |
 
 Figure 7: PCR List All 24 Registers in SHA-256
 
@@ -846,7 +846,7 @@ Expected Output (Partial): RSA Encrypt with Default Input 168168
 The data has been encrypted.
 
 | ![](images/CryptoFNS/RSA/RSA_Unedited/TPMCryptoFn_RSAEncryptedData.png) |
-| ----------------------------------------------------------------------- |
+| :----------------------------------------------------------: |
 
 Figure 11: Encrypted “data_encrypted.txt” shown in unreadable form
 
@@ -1957,7 +1957,7 @@ action: evicted
 Example Output: Evicting AK/EK handle 0x81010002 Success
 
 
-# <a name="references"></a>References
+# References
 
 1.  https://downloads.raspberrypi.org/raspios_full_arm64/images/raspios_full_arm64-2025-05-13/
 2.  <https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/>
