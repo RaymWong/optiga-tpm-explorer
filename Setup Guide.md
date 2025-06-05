@@ -9,7 +9,7 @@ This page provides instructions on how to install and configure the Raspberry Pi
 
 ## Prerequisites 
 
-This tool was tested on a Raspberry Pi (RPi) 3 Model B+/ RPi 4 Model B / RPi 5 with Debian Linux in Release Version 12 (Bookworm) and kernel version 6.12.25 using an Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 attached to the Raspberry Pi board.
+This tool was tested on a Raspberry Pi (RPi) 3 Model B+/ RPi 4 Model B / RPi 5 with Debian Linux in Release Version 12 (Bookworm) and kernel version 6.12.25 using an Infineon OPTIGA™ TPM SLB 9670/72/73 TPM2.0 attached to the Raspberry Pi board.
 
 | ![](images/Overview/TPMRPI4.png) |
 | :------------------------------: |
@@ -20,11 +20,11 @@ Figure 1: Infineon OPTIGA™ TPM SLB 9672 RPI Evaluation Board on a Raspberry Pi
 
 **Table 1** shows a summary of the hardware and environment used.
 
-| Hardware                                    | Version   and Firmware/OS                                    | Comment                                                      |
-| ------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Host  PC/Laptop                             | Windows® 11 with VNC viewer                                  | This  is an alternative option to interacting with  the Raspberry Pi® in a more convenient and faster way without a monitor connected to Raspberry Pi®. |
-| OPTIGA™ TPM 2.0 evaluation boards supported | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®. |
-| Raspberry  Pi® Board                        | •  Model 3 B+/ 4 B/ 5, Bookworm OS (2025-05-13) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply | Raspberry Pi® Bookworm OS with kernel version 6.12.25  can be downloaded at [[1]](#references). <br />To setup the Raspberry Pi®, follow the [getting started guide](https://www.raspberrypi.com/documentation/computers/getting-started.html#raspberry-pi-imager) to setup the SD card accordingly. |
+| Hardware                                    | Version   and Firmware/OS                                                                                                                                                                                                                                                                                                                                                                            | Comment                                                                                                                                                                                                                                                                                              |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host  PC/Laptop                             | Windows® 11 with VNC viewer                                                                                                                                                                                                                                                                                                                                                                          | This  is an alternative option to interacting with  the Raspberry Pi® in a more convenient and faster way without a monitor connected to Raspberry Pi®.                                                                                                                                              |
+| OPTIGA™ TPM 2.0 evaluation boards supported | • [IRIDIUM9670 TPM2.0 LINUX](https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux/) <br /> • [OPTIGA™ TPM SLB 9672 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/)<br /> • [OPTIGA™ TPM SLB 9673 RPI evaluation board](https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9673-rpi-eval/) | These  boards contains Infineon OPTIGA™ TPM SLB 9670/72/73 TPM2.0 mounted on an  easy-to-use hardware board, which can be attached to the Raspberry Pi®.                                                                                                                                             |
+| Raspberry  Pi® Board                        | •  Model 3 B+/ 4 B/ 5, Bookworm OS (2025-05-13) <br />  •  Micro SD Card with at least 16 GB <br />  •  Micro-B/ Type C USB cable for power supply                                                                                                                                                                                                                                                   | Raspberry Pi® Bookworm OS with kernel version 6.12.25  can be downloaded at [[1]](#references). <br />To setup the Raspberry Pi®, follow the [getting started guide](https://www.raspberrypi.com/documentation/computers/getting-started.html#raspberry-pi-imager) to setup the SD card accordingly. |
 
 **Table 2** shows a summary of the software used.
 
@@ -74,19 +74,31 @@ If OPTIGA™ TPM 2.0 Explorer failed to launch:
 | ![](images/Setup/insert_tpm_module.png) |
 | :-------------------------------------: |
 
+**Figure 2**: Error message indicating 'Device not found' when opening the GUI tool
+
 Open the configuration file in an editor:  
 
 ```shell
 sudo nano /boot/firmware/config.txt   
 ```
 
-Ensure the following settings are set ( for SLB9670 and SLB9672) and reboot after saving the file: 
+Ensure the following settings are set:
+
+For SLB9670 and SLB9672
 
 ```shell
 dtparam=spi=on
 dtoverlay=tpm-slb9670
 ```
 
+For SLB9673
+
+```shell
+dtparam=i2c_arm=on
+dtoverlay=tpm-slb9673
+```
+
+and reboot after saving the file.
 ## References
 
 1.  https://downloads.raspberrypi.org/raspios_full_arm64/images/raspios_full_arm64-2025-05-13/

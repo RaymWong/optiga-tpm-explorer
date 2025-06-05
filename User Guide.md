@@ -1964,6 +1964,7 @@ Example Output: Evicting AK/EK handle 0x81010002 Success
 3.  <http://www.infineon.com/tpm>
 4.  https://trustedcomputinggroup.org/resource/tpm-main-specification/
 5. <https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/>
+6. <https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9673-rpi-eval/>
 
 
 
