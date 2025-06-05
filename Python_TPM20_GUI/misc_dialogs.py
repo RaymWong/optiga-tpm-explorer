@@ -367,7 +367,7 @@ class ClearWarningDlg(wx.MessageDialog):
 class Not_IFX_TPM_Dlg(wx.MessageDialog):
     def __init__(self, parent, title):
         wx.MessageDialog.__init__(self, parent, message="", caption=title, style=wx.OK | wx.ICON_WARNING)
-        self.SetMessage("Please insert SLB9670 IRIDIUM board, more infor at:\n https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux")
+        self.SetMessage("Please insert one of the following boards: \n SLB9670 IRIDIUM board, more info at https://www.infineon.com/cms/en/product/evaluation-boards/iridium9670-tpm2.0-linux \n SLB9672 RPI EVAL, more info at https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9672-rpi-eval/ \n SLB9673 RPI EVAL, more info at https://www.infineon.com/cms/en/product/evaluation-boards/optiga-tpm-9673-rpi-eval/")
        
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
 
