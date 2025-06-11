@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Python version](https://img.shields.io/badge/Python-3-green?logo=python)](https://www.python.org/)
-[![REUSE status](https://api.reuse.software/badge/github.com/Infineon/optiga-tpm-explorer)](https://api.reuse.software/info/github.com/Infineon/optiga-tpm-explorer)
+[![REUSE status](https://api.reuse.software/badge/github.com/RaymWong/optiga-tpm-explorer)](https://api.reuse.software/info/github.com/RaymWong/optiga-tpm-explorer)
 
 # OPTIGA™ TPM 2.0 Explorer
 
